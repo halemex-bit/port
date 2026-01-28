@@ -3,144 +3,116 @@ document.addEventListener('alpine:init', () => {
         // State
         lang: 'en',
         currentPage: 'auth',
-        authMode: 'login',
+        authMode: 'login', // 'login' or 'signup'
         isAuthenticated: false,
         
-        // Checkout Logic
-        showCheckout: false, // Control checkout modal
-        showSuccess: false,  // Control success screen
-        isSubmitting: false, // Loading state
+        // Form Data (Baru)
+        form: {
+            countryPrefix: '+60',
+            country: 'Malaysia'
+        },
 
-        // Data Produk
+        // Data Produk & Cart (Kekal Sama seperti sebelum ini...)
         products: [
-            { id: 1, type: 'electric', name_en: 'Plug Point 13A', name_ms: 'Plug Point 13A', price: 80, img: 'https://placehold.co/150/334155/FFF?text=Plug' },
-            { id: 2, type: 'electric', name_en: 'Industrial Fan', name_ms: 'Kipas Industri', price: 150, img: 'https://placehold.co/150/334155/FFF?text=Fan' },
-            { id: 3, type: 'furniture', name_en: 'Banquet Table', name_ms: 'Meja Banquet', price: 30, img: 'https://placehold.co/150/334155/FFF?text=Table' },
-            { id: 4, type: 'furniture', name_en: 'Plastic Chair', name_ms: 'Kerusi Plastik', price: 5, img: 'https://placehold.co/150/334155/FFF?text=Chair' },
+            { id: 1, type: 'electric', name_en: 'Plug Point 13A', name_ms: 'Plug Point 13A', price: 80, img: 'https://placehold.co/150/1e293b/FFF?text=Plug' },
+            { id: 2, type: 'electric', name_en: 'Industrial Fan', name_ms: 'Kipas Industri', price: 150, img: 'https://placehold.co/150/1e293b/FFF?text=Fan' },
+            { id: 3, type: 'furniture', name_en: 'Banquet Table', name_ms: 'Meja Banquet', price: 30, img: 'https://placehold.co/150/1e293b/FFF?text=Table' },
+            { id: 4, type: 'furniture', name_en: 'Plastic Chair', name_ms: 'Kerusi Plastik', price: 5, img: 'https://placehold.co/150/1e293b/FFF?text=Chair' },
         ],
         cart: {},
-
-        // Data Logistics (Timeline Event)
+        
+        // Checkout & Logistics Logic (Kekal Sama...)
+        showCheckout: false,
+        showSuccess: false,
+        isSubmitting: false,
         logisticsTimeline: [
             { time: '12 Mac', title: 'Booth Setup', desc: 'Vendor boleh mula masuk barang bermula jam 2:00 PM.', status: 'upcoming' },
             { time: '13 Mac', title: 'Event Day 1', desc: 'Pintu dibuka untuk pengunjung jam 10:00 AM.', status: 'upcoming' },
             { time: '15 Mac', title: 'Teardown', desc: 'Semua barang mesti dikeluarkan sebelum 12:00 AM.', status: 'upcoming' },
         ],
 
-        // Translations
+        // Translations (Updated Wording)
         text: {
             en: {
-                // ... (Text lama kekal sama)
-                welcome: "Vendor Portal",
-                subtitle: "Control center for all your events",
-                login: "Login",
-                signup: "Sign Up",
+                // Auth
+                login_tab: "Log In",
+                signup_tab: "Vendor Registration",
+                login_desc: "Welcome back to Absolut Bazaar Portal.",
+                signup_desc: "Register your booth details below.",
+                
+                // Form Labels
+                pic_name: "PIC Name",
+                phone: "Phone Number",
                 email: "Email Address",
-                phone_ic: "Phone / IC No.",
-                enter_portal: "Enter Portal",
-                dashboard: "Dashboard",
-                rules: "Rules",
-                order: "Order",
-                invoices: "Invoices",
-                logistics: "Logistics", // Added
-                cart_total: "Total Estimate",
-                submit_order: "Confirm Order",
-                checkout_title: "Review Order",
-                checkout_desc: "Please review your items before confirming.",
-                item: "Item",
-                qty: "Qty",
-                subtotal: "Subtotal",
-                cancel: "Cancel",
-                confirm: "Confirm & Pay",
-                success_title: "Order Received!",
-                success_desc: "We have sent the invoice to your email.",
-                back_home: "Back to Home",
-                empty_cart: "Your cart is empty."
+                company_name: "Company Name",
+                brand_name: "Brand Name",
+                address: "Address",
+                country: "Country",
+                booth_no: "Booth Number",
+                
+                // Dashboard
+                welcome: "Vendor Portal",
+                subtitle: "Absolut Bazaar Management System",
+                status_booth: "Booth Status",
+                
+                // Wording Fix Here
+                deadline_label: "Submission Deadline", // "Penghantaran Design ditutup" version
+                
+                balance: "Outstanding",
+                days_left: "Days Left",
+                
+                // ... (Yang lain kekal sama)
+                dashboard: "Dashboard", rules: "Rules", order: "Order", invoices: "Invoices", logistics: "Logistics",
+                cart_total: "Total Estimate", submit_order: "Confirm Order", checkout_title: "Review Order", 
+                checkout_desc: "Please review items.", item: "Item", confirm: "Confirm & Pay", cancel: "Cancel",
+                success_title: "Order Received!", success_desc: "Invoice sent to email.", back_home: "Back to Home", empty_cart: "Cart empty."
             },
             ms: {
-                // ... (Text lama kekal sama)
-                welcome: "Portal Vendor",
-                subtitle: "Pusat kawalan untuk semua event anda",
-                login: "Log Masuk",
-                signup: "Daftar Baru",
+                // Auth
+                login_tab: "Log Masuk",
+                signup_tab: "Daftar Vendor",
+                login_desc: "Selamat kembali ke Portal Absolut Bazaar.",
+                signup_desc: "Isi maklumat booth anda di bawah.",
+                
+                // Form Labels
+                pic_name: "Nama PIC",
+                phone: "No. Telefon",
                 email: "Alamat Email",
-                phone_ic: "No. Tel / IC",
-                enter_portal: "Masuk Portal",
-                dashboard: "Utama",
-                rules: "Info",
-                order: "Order",
-                invoices: "Invois",
-                logistics: "Logistik", // Added
-                cart_total: "Anggaran Total",
-                submit_order: "Sahkan Order",
-                checkout_title: "Semakan Order",
-                checkout_desc: "Sila semak item anda sebelum pengesahan.",
-                item: "Barang",
-                qty: "Kuantiti",
-                subtotal: "Jumlah",
-                cancel: "Batal",
-                confirm: "Sahkan & Bayar",
-                success_title: "Order Diterima!",
-                success_desc: "Kami telah menghantar invois ke email anda.",
-                back_home: "Kembali ke Utama",
-                empty_cart: "Bakul anda kosong."
+                company_name: "Nama Syarikat",
+                brand_name: "Nama Brand",
+                address: "Alamat",
+                country: "Negara",
+                booth_no: "No. Booth",
+                
+                // Dashboard
+                welcome: "Portal Vendor",
+                subtitle: "Sistem Pengurusan Absolut Bazaar",
+                status_booth: "Status Booth",
+                
+                // Wording Fix Here
+                deadline_label: "Tarikh Akhir Hantar", // Ini yang kau minta tukar
+                
+                balance: "Baki Bayaran",
+                days_left: "Hari Lagi",
+                
+                // ... (Yang lain kekal sama)
+                dashboard: "Utama", rules: "Info", order: "Order", invoices: "Invois", logistics: "Logistik",
+                cart_total: "Anggaran Total", submit_order: "Sahkan Order", checkout_title: "Semakan Order", 
+                checkout_desc: "Sila semak item.", item: "Barang", confirm: "Sahkan & Bayar", cancel: "Batal",
+                success_title: "Order Diterima!", success_desc: "Invois telah dihantar ke email.", back_home: "Kembali ke Utama", empty_cart: "Bakul kosong."
             }
         },
 
-        // Methods
+        // Methods (Kekal Sama)
         t(key) { return this.text[this.lang][key] || key; },
         setLang(val) { this.lang = val; },
         login() { this.isAuthenticated = true; this.currentPage = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' }); },
         logout() { this.isAuthenticated = false; this.currentPage = 'auth'; this.cart = {}; },
-        
-        addToCart(id, qty) {
-            if (!this.cart[id]) this.cart[id] = 0;
-            this.cart[id] += qty;
-            if (this.cart[id] < 0) this.cart[id] = 0;
-        },
-
-        getCartTotal() {
-            let total = 0;
-            for (const [id, qty] of Object.entries(this.cart)) {
-                const product = this.products.find(p => p.id == id);
-                if (product) total += product.price * qty;
-            }
-            return total.toFixed(2);
-        },
-
-        getCartItems() {
-            return Object.entries(this.cart)
-                .filter(([_, qty]) => qty > 0)
-                .map(([id, qty]) => {
-                    const p = this.products.find(p => p.id == id);
-                    const name = this.lang === 'en' ? p.name_en : p.name_ms;
-                    return { ...p, name, qty, subtotal: (p.price * qty).toFixed(2) };
-                });
-        },
-
-        // Logic Checkout Baru
-        openCheckout() {
-            if (this.getCartTotal() > 0) {
-                this.showCheckout = true;
-            } else {
-                alert(this.lang === 'en' ? "Please select an item first." : "Sila pilih barang dahulu.");
-            }
-        },
-
-        processPayment() {
-            this.isSubmitting = true;
-            // Simulasi API Call (2 saat)
-            setTimeout(() => {
-                this.isSubmitting = false;
-                this.showCheckout = false;
-                this.showSuccess = true;
-                this.cart = {}; // Clear cart
-            }, 2000);
-        },
-
-        finishOrder() {
-            this.showSuccess = false;
-            this.currentPage = 'dashboard';
-        }
+        addToCart(id, qty) { if (!this.cart[id]) this.cart[id] = 0; this.cart[id] += qty; if (this.cart[id] < 0) this.cart[id] = 0; },
+        getCartTotal() { let t = 0; for (const [i, q] of Object.entries(this.cart)) { const p = this.products.find(x => x.id == i); if (p) t += p.price * q; } return t.toFixed(2); },
+        getCartItems() { return Object.entries(this.cart).filter(([_, q]) => q > 0).map(([i, q]) => { const p = this.products.find(x => x.id == i); const n = this.lang === 'en' ? p.name_en : p.name_ms; return { ...p, name: n, qty: q, subtotal: (p.price * q).toFixed(2) }; }); },
+        openCheckout() { if (this.getCartTotal() > 0) this.showCheckout = true; else alert(this.lang === 'en' ? "Please select item." : "Sila pilih barang."); },
+        processPayment() { this.isSubmitting = true; setTimeout(() => { this.isSubmitting = false; this.showCheckout = false; this.showSuccess = true; this.cart = {}; }, 2000); },
+        finishOrder() { this.showSuccess = false; this.currentPage = 'dashboard'; }
     }));
 });
