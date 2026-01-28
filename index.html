@@ -82,6 +82,11 @@
         <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-amber-900/10 rounded-full blur-[120px]"></div>
     </div>
 
+    <div class="fixed top-4 right-4 z-[60] flex gap-2 bg-black/50 backdrop-blur rounded-full p-1 border border-slate-800">
+        <button @click="setLang('ms')" :class="lang==='ms' ? 'bg-amber-500 text-black font-bold' : 'text-slate-400 hover:text-white'" class="px-3 py-1 rounded-full text-xs transition">BM</button>
+        <button @click="setLang('en')" :class="lang==='en' ? 'bg-amber-500 text-black font-bold' : 'text-slate-400 hover:text-white'" class="px-3 py-1 rounded-full text-xs transition">EN</button>
+    </div>
+
     <div x-show="!isAuthenticated" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 bg-[url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center bg-blend-overlay">
         
         <div class="w-full max-w-md bg-black border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -91,20 +96,20 @@
             </div>
 
             <div class="flex text-sm font-bold uppercase tracking-wider border-b border-slate-800 bg-black sticky top-0 z-10">
-                <button @click="authMode = 'login'" :class="authMode === 'login' ? 'active' : ''" class="auth-tab flex-1 py-4 text-center">Log In</button>
-                <button @click="authMode = 'signup'" :class="authMode === 'signup' ? 'active' : ''" class="auth-tab flex-1 py-4 text-center">First Time Log In</button>
+                <button @click="authMode = 'login'" :class="authMode === 'login' ? 'active' : ''" class="auth-tab flex-1 py-4 text-center" x-text="t('login_tab')"></button>
+                <button @click="authMode = 'signup'" :class="authMode === 'signup' ? 'active' : ''" class="auth-tab flex-1 py-4 text-center" x-text="t('signup_tab')"></button>
             </div>
 
             <div class="p-6 flex-1 overflow-y-auto scrollbar-hide bg-black">
                 <div x-show="authMode === 'login'" class="space-y-5 pt-4">
-                    <p class="text-slate-400 text-xs text-center mb-4">Welcome back to Vendor Portal.</p>
+                    <p class="text-slate-400 text-xs text-center mb-4" x-text="t('login_desc')"></p>
                     <div><label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Email</label><input type="email" class="w-full px-4 py-3 rounded-lg input-dark text-sm"></div>
                     <div><label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Password</label><input type="password" class="w-full px-4 py-3 rounded-lg input-dark text-sm"></div>
-                    <button @click="login()" class="w-full bg-white text-black font-bold py-3.5 rounded-lg hover:bg-slate-200 transition mt-4">Log In</button>
+                    <button @click="login()" class="w-full bg-white text-black font-bold py-3.5 rounded-lg hover:bg-slate-200 transition mt-4" x-text="t('login_btn')"></button>
                 </div>
 
                 <div x-show="authMode === 'signup'" class="space-y-4 pt-2">
-                    <p class="text-slate-400 text-xs text-center mb-4">Register your booth details below.</p>
+                    <p class="text-slate-400 text-xs text-center mb-4" x-text="t('signup_desc')"></p>
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Company Name</label><input type="text" x-model="user.companyName" class="w-full px-3 py-3 rounded-lg input-dark text-sm"></div>
                         <div><label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Brand Name</label><input type="text" x-model="user.brandName" class="w-full px-3 py-3 rounded-lg input-dark text-sm"></div>
@@ -114,24 +119,40 @@
                         <div><label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Booth Number</label><input type="text" x-model="user.boothNo" placeholder="e.g A-12" class="w-full px-3 py-3 rounded-lg input-dark text-sm"></div>
                     </div>
                     <div><label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Email</label><input type="email" x-model="user.email" class="w-full px-4 py-3 rounded-lg input-dark text-sm"></div>
+                    
                     <div>
                         <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Phone Number</label>
                         <div class="flex gap-2">
-                            <div class="relative w-24">
-                                <select x-model="user.phonePrefix" @change="updateCountry()" class="w-full px-2 py-3 rounded-lg input-dark text-sm appearance-none pl-8">
-                                    <option value="+60">+60</option><option value="+65">+65</option><option value="+62">+62</option><option value="+673">+673</option>
+                            <div class="relative w-28">
+                                <select x-model="user.phonePrefix" @change="updateCountry()" class="w-full px-2 py-3 rounded-lg input-dark text-sm appearance-none pl-9 cursor-pointer">
+                                    <option value="+60">+60</option>
+                                    <option value="+65">+65</option>
+                                    <option value="+62">+62</option>
+                                    <option value="+673">+673</option>
                                 </select>
-                                <span class="absolute left-3 top-3 text-lg" x-text="getFlag(user.phonePrefix)">🇲🇾</span>
+                                <span class="absolute left-3 top-3 text-lg pointer-events-none" x-text="getFlag(user.phonePrefix)"></span>
+                                <i class="fa-solid fa-chevron-down absolute right-2 top-4 text-[10px] text-slate-500 pointer-events-none"></i>
                             </div>
-                            <input type="tel" x-model="user.phone" class="flex-1 px-4 py-3 rounded-lg input-dark text-sm">
+                            <input type="tel" x-model="user.phone" placeholder="No dashes" class="flex-1 px-4 py-3 rounded-lg input-dark text-sm">
                         </div>
                     </div>
+
                     <div><label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Address</label><textarea x-model="user.address" class="w-full px-4 py-3 rounded-lg input-dark text-sm h-20 resize-none"></textarea></div>
+                    
                     <div>
                         <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Country</label>
-                        <select x-model="user.country" class="w-full px-4 py-3 rounded-lg input-dark text-sm"><option value="Malaysia">Malaysia</option><option value="Singapore">Singapore</option><option value="Indonesia">Indonesia</option><option value="Brunei">Brunei</option></select>
+                        <div class="relative">
+                            <select x-model="user.country" class="w-full px-4 py-3 rounded-lg input-dark text-sm appearance-none cursor-pointer">
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Singapore">Singapore</option>
+                                <option value="Indonesia">Indonesia</option>
+                                <option value="Brunei">Brunei</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-xs text-slate-500 pointer-events-none"></i>
+                        </div>
                     </div>
-                    <button @click="login()" class="w-full bg-white text-black font-bold py-3.5 rounded-lg hover:bg-slate-200 transition mt-6">Confirm Registration</button>
+
+                    <button @click="login()" class="w-full bg-white text-black font-bold py-3.5 rounded-lg hover:bg-slate-200 transition mt-6" x-text="t('signup_btn')"></button>
                     <div class="h-6"></div>
                 </div>
             </div>
@@ -148,7 +169,7 @@
                 <template x-for="item in ['dashboard', 'order', 'logistics', 'invoices', 'profile', 'rules']">
                     <button @click="currentPage = item" :class="currentPage === item ? 'nav-item active' : 'nav-item'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all capitalize mb-2">
                         <i :class="icons[item]" class="w-6 text-center text-lg"></i>
-                        <span x-text="labels[item]"></span>
+                        <span x-text="t(item)"></span>
                     </button>
                 </template>
             </nav>
@@ -172,27 +193,27 @@
 
             <div x-show="currentPage === 'dashboard'" class="space-y-6 fade-enter-active">
                 <div>
-                    <h1 class="text-3xl font-bold text-white">Dashboard</h1>
-                    <p class="text-slate-500">Welcome, <span class="text-amber-400" x-text="user.brandName"></span></p>
+                    <h1 class="text-3xl font-bold text-white" x-text="t('dashboard')"></h1>
+                    <p class="text-slate-500"><span x-text="t('welcome')"></span> <span class="text-amber-400" x-text="user.brandName"></span></p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-[#111] p-6 rounded-xl border border-slate-800 border-l-4 border-l-emerald-500">
-                        <p class="text-xs font-bold text-slate-500 uppercase">Booth Status</p>
+                        <p class="text-xs font-bold text-slate-500 uppercase" x-text="t('status')"></p>
                         <h3 class="text-xl font-bold text-white mt-1">Confirmed</h3>
                     </div>
                     <div class="bg-[#111] p-6 rounded-xl border border-slate-800 border-l-4 border-l-amber-500">
-                        <p class="text-xs font-bold text-slate-500 uppercase">Submission Deadline</p>
-                        <h3 class="text-xl font-bold text-white mt-1">2 Days Left</h3>
+                        <p class="text-xs font-bold text-slate-500 uppercase" x-text="t('deadline')"></p>
+                        <h3 class="text-xl font-bold text-white mt-1">2 <span x-text="t('days_left')"></span></h3>
                     </div>
                     <div class="bg-[#111] p-6 rounded-xl border border-slate-800 border-l-4 border-l-sky-500">
-                        <p class="text-xs font-bold text-slate-500 uppercase">Outstanding</p>
+                        <p class="text-xs font-bold text-slate-500 uppercase" x-text="t('balance')"></p>
                         <h3 class="text-xl font-bold text-white mt-1">RM 0.00</h3>
                     </div>
                 </div>
             </div>
 
             <div x-show="currentPage === 'order'" class="space-y-6 fade-enter-active">
-                <h1 class="text-2xl font-bold text-white">Booth Orders</h1>
+                <h1 class="text-2xl font-bold text-white" x-text="t('order')"></h1>
                 
                 <div class="flex overflow-x-auto gap-3 pb-2 scrollbar-hide">
                     <template x-for="cat in ['furniture', 'electrical', 'storage', 'pass', 'parking']">
@@ -221,7 +242,7 @@
             </div>
 
             <div x-show="currentPage === 'logistics'" class="space-y-6 fade-enter-active max-w-3xl">
-                <h1 class="text-2xl font-bold text-white">Logistics & Schedule</h1>
+                <h1 class="text-2xl font-bold text-white" x-text="t('logistics')"></h1>
                 
                 <div class="bg-[#111] rounded-2xl border border-slate-800 overflow-hidden">
                     <div class="h-32 bg-slate-900 relative">
@@ -256,7 +277,7 @@
 
             <div x-show="currentPage === 'profile'" class="space-y-6 fade-enter-active max-w-2xl">
                 <header class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-white">Vendor Profile</h1>
+                    <h1 class="text-2xl font-bold text-white" x-text="t('profile')"></h1>
                     <button class="bg-amber-500 text-black px-4 py-1.5 rounded-full text-xs font-bold hover:bg-white transition">Save Changes</button>
                 </header>
 
@@ -290,7 +311,10 @@
                         <div>
                             <label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Phone</label>
                             <div class="flex gap-2">
-                                <input type="text" x-model="user.phonePrefix" class="w-16 px-2 py-2 rounded-lg bg-black border border-slate-800 text-center text-sm text-slate-400" readonly>
+                                <div class="relative w-20">
+                                    <span class="absolute left-2 top-2.5 text-lg" x-text="getFlag(user.phonePrefix)"></span>
+                                    <input type="text" x-model="user.phonePrefix" class="w-full px-2 py-2 pl-8 rounded-lg bg-black border border-slate-800 text-sm text-slate-400" readonly>
+                                </div>
                                 <input type="tel" x-model="user.phone" class="flex-1 px-3 py-2 rounded-lg input-dark text-sm">
                             </div>
                         </div>
@@ -315,7 +339,7 @@
 
         <div x-show="currentPage === 'order'" class="fixed bottom-24 left-4 right-4 md:absolute md:bottom-8 md:left-auto md:right-8 md:w-80 bg-[#1a1a1a] border border-slate-700 rounded-full p-2 pl-6 flex items-center justify-between z-40 shadow-2xl">
             <div>
-                <p class="text-[10px] text-slate-400 uppercase font-bold">Total</p>
+                <p class="text-[10px] text-slate-400 uppercase font-bold" x-text="t('cart_total')"></p>
                 <p class="text-lg font-bold text-amber-400">RM <span x-text="getCartTotal()"></span></p>
             </div>
             <button @click="openCheckout()" class="bg-white text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-slate-200 transition">
@@ -336,7 +360,7 @@
                     <template x-if="item !== 'order'">
                         <i :class="icons[item]" class="text-xl mb-1 transition-colors" :class="currentPage === item ? 'text-amber-400' : 'text-slate-600'"></i>
                     </template>
-                    <span class="text-[9px] font-bold uppercase transition-colors" :class="currentPage === item ? 'text-white' : 'text-slate-600'" x-text="labels[item]"></span>
+                    <span class="text-[9px] font-bold uppercase transition-colors" :class="currentPage === item ? 'text-white' : 'text-slate-600'" x-text="t(item)"></span>
                 </button>
             </template>
         </nav>
@@ -347,7 +371,7 @@
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showCheckout = false"></div>
         <div class="relative w-full max-w-md bg-[#111] border border-slate-800 rounded-2xl p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-white">Order Summary</h3>
+                <h3 class="text-xl font-bold text-white" x-text="t('checkout_title')"></h3>
                 <button @click="showCheckout = false" class="text-slate-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="space-y-3 max-h-60 overflow-y-auto mb-4">
@@ -365,7 +389,7 @@
                 </template>
             </div>
             <div class="flex justify-between items-end border-t border-slate-800 pt-4 mb-4">
-                <span class="text-slate-400 text-xs uppercase font-bold">Total</span>
+                <span class="text-slate-400 text-xs uppercase font-bold" x-text="t('cart_total')"></span>
                 <span class="text-2xl font-bold text-white">RM <span x-text="getCartTotal()"></span></span>
             </div>
             <button @click="processPayment()" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-slate-200">Confirm Payment</button>
@@ -389,8 +413,27 @@
                 },
                 labels: { dashboard: 'Home', rules: 'Rules', order: 'Order', logistics: 'Logistics', invoices: 'Invoices', profile: 'Profile' },
                 icons: { dashboard: 'fa-house', rules: 'fa-book-open', order: 'fa-bag-shopping', logistics: 'fa-truck-fast', invoices: 'fa-file-invoice', profile: 'fa-user' },
-                t_labels: { furniture: 'Furniture', electrical: 'Electrical', storage: 'Storage', pass: 'Passes', parking: 'Parking' },
                 
+                // Translations
+                text: {
+                    en: {
+                        login_tab: 'Log In', signup_tab: 'First Time Log In', login_desc: 'Welcome back to Vendor Portal.', signup_desc: 'Register your booth details below.',
+                        login_btn: 'Log In', signup_btn: 'Confirm Registration',
+                        dashboard: 'Dashboard', rules: 'Rules', order: 'Order', logistics: 'Logistics', invoices: 'Invoices', profile: 'Profile',
+                        welcome: 'Welcome,', status: 'Booth Status', deadline: 'Submission Deadline', balance: 'Outstanding', days_left: 'Days Left',
+                        furniture: 'Furniture', electrical: 'Electrical', storage: 'Storage', pass: 'Passes', parking: 'Parking',
+                        cart_total: 'Total', checkout_title: 'Order Summary', submit_order: 'Checkout'
+                    },
+                    ms: {
+                        login_tab: 'Log Masuk', signup_tab: 'Daftar Kali Pertama', login_desc: 'Selamat kembali ke Portal Vendor.', signup_desc: 'Daftarkan butiran booth anda.',
+                        login_btn: 'Masuk', signup_btn: 'Sahkan Pendaftaran',
+                        dashboard: 'Utama', rules: 'Info', order: 'Tempahan', logistics: 'Logistik', invoices: 'Invois', profile: 'Profil',
+                        welcome: 'Selamat datang,', status: 'Status Booth', deadline: 'Tarikh Akhir', balance: 'Baki Bayaran', days_left: 'Hari Lagi',
+                        furniture: 'Perabot', electrical: 'Elektrik', storage: 'Storan', pass: 'Pas', parking: 'Parkir',
+                        cart_total: 'Jumlah', checkout_title: 'Ringkasan', submit_order: 'Bayar'
+                    }
+                },
+
                 products: [
                     { id: 1, category: 'furniture', name_ms: 'Meja Banquet', name_en: 'Banquet Table', price: 30, img: 'https://placehold.co/150/111/444?text=Table' },
                     { id: 2, category: 'furniture', name_ms: 'Kerusi Plastik', name_en: 'Plastic Chair', price: 5, img: 'https://placehold.co/150/111/444?text=Chair' },
@@ -405,10 +448,11 @@
                     { time: '15 Mac', title: 'Teardown', desc: 'Clearance by 12:00 AM.' },
                 ],
 
-                t(key) { return this.t_labels[key] || key; },
+                t(key) { return this.text[this.lang][key] || key; },
                 t_prod(p) { return this.lang === 'ms' ? p.name_ms : p.name_en; },
                 getFlag(prefix) { const map={'+60':'🇲🇾','+65':'🇸🇬','+62':'🇮🇩','+673':'🇧🇳'}; return map[prefix]||'🏳️'; },
                 updateCountry() { const map={'+60':'Malaysia','+65':'Singapore','+62':'Indonesia','+673':'Brunei'}; this.user.country = map[this.user.phonePrefix] || 'Others'; },
+                setLang(val) { this.lang = val; },
                 
                 login() { 
                     if(this.authMode==='signup' && !this.user.brandName) { alert('Please enter brand name'); return; }
