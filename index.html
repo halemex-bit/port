@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vendor Portal - Premium</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-[#0f172a] text-slate-100 font-sans min-h-screen selection:bg-indigo-500 selection:text-white" x-data="vendorPortal()" x-cloak>
+
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-sky-600/20 rounded-full blur-[120px]"></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-7xl mx-auto flex h-screen overflow-hidden">
+
+        <aside class="hidden md:flex flex-col w-72 h-full border-r border-white/5 bg-[#0f172a]/50 backdrop-blur-xl p-6 transition-all" 
+               x-show="isAuthenticated" 
+               x-transition:enter="transition ease-out duration-300"
+               x-transition:enter-start="-translate-x-full opacity-0"
+               x-transition:enter-end="translate-x-0 opacity-100">
+            
+            <div class="flex items-center gap-3 mb-10 px-2">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-cube text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight">MY EVENT</h1>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">Portal</p>
+                </div>
+            </div>
+
+            <nav class="flex-1 space-y-2">
+                <template x-for="item in ['dashboard', 'rules', 'logistics', 'order', 'invoices']">
+                    <button @click="currentPage = item" 
+                            :class="currentPage === item ? 'bg-white/10 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white hover:bg-white/5'"
+                            class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group">
+                        <i :class="{
+                            'fa-house': item === 'dashboard',
+                            'fa-book-open': item === 'rules',
+                            'fa-truck-fast': item === 'logistics',
+                            'fa-bag-shopping': item === 'order',
+                            'fa-file-invoice': item === 'invoices'
+                        }" class="text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium text-sm capitalize" x-text="t(item)"></span>
+                    </button>
+                </template>
+            </nav>
+
+            <div class="mt-auto pt-6 border-t border-white/10">
+                <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5">
+                    <img src="https://ui-avatars.com/api/?name=Vendor+X&background=6366f1&color=fff" class="w-10 h-10 rounded-full">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold truncate">Nasi Lemak Royale</p>
+                        <p class="text-xs text-slate-400">Booth A-12</p>
+                    </div>
+                    <button @click="logout()" class="text-slate-400 hover:text-red-400 transition"><i class="fa-solid fa-power-off"></i></button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 h-full overflow-y-auto overflow-x-hidden relative scrollbar-hide">
+            
+            <header class="md:hidden sticky top-0 z-30 px-6 py-4 ios-glass flex justify-between items-center" x-show="isAuthenticated">
+                <span class="font-bold text-lg">My Portal</span>
+                <div class="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-bold">A-12</div>
+            </header>
+
+            <div x-show="!isAuthenticated" class="min-h-screen flex items-center justify-center p-4">
+                <div class="w-full max-w-4xl grid md:grid-cols-2 gap-0 bg-[#1e293b]/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+                    
+                    <div class="p-8 md:p-12 flex flex-col justify-center">
+                        <div class="flex justify-end mb-6">
+                            <div class="bg-black/20 p-1 rounded-full flex gap-1">
+                                <button @click="setLang('en')" :class="lang === 'en' ? 'bg-indigo-500 text-white' : 'text-slate-400'" class="px-3 py-1 rounded-full text-xs font-bold transition">EN</button>
+                                <button @click="setLang('ms')" :class="lang === 'ms' ? 'bg-indigo-500 text-white' : 'text-slate-400'" class="px-3 py-1 rounded-full text-xs font-bold transition">BM</button>
+                            </div>
+                        </div>
+
+                        <h2 class="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400" x-text="authMode === 'login' ? t('login') : t('signup')"></h2>
+                        <p class="text-slate-400 text-sm mb-8" x-text="authMode === 'login' ? t('subtitle') : t('select_lang_desc')"></p>
+
+                        <form class="space-y-4" @submit.prevent="login()">
+                            <div x-show="authMode === 'login'" class="space-y-4">
+                                <div class="ios-input rounded-2xl px-4 py-3 flex items-center gap-3">
+                                    <i class="fa-regular fa-envelope text-slate-400"></i>
+                                    <input type="email" :placeholder="t('email')" class="bg-transparent w-full outline-none text-sm placeholder:text-slate-500">
+                                </div>
+                                <div class="ios-input rounded-2xl px-4 py-3 flex items-center gap-3">
+                                    <i class="fa-regular fa-id-card text-slate-400"></i>
+                                    <input type="text" :placeholder="t('phone_ic')" class="bg-transparent w-full outline-none text-sm placeholder:text-slate-500">
+                                </div>
+                            </div>
+
+                            <div x-show="authMode === 'signup'" class="space-y-4">
+                                <div class="ios-input rounded-2xl px-4 py-3 flex items-center gap-3">
+                                    <i class="fa-solid fa-store text-slate-400"></i>
+                                    <input type="text" :placeholder="t('brand_name')" class="bg-transparent w-full outline-none text-sm">
+                                </div>
+                                <div class="ios-input rounded-2xl px-4 py-3 flex items-center gap-3">
+                                    <i class="fa-solid fa-layer-group text-slate-400"></i>
+                                    <select class="bg-transparent w-full outline-none text-sm text-slate-300">
+                                        <option value="" class="bg-slate-900" x-text="t('category')"></option>
+                                        <option value="fnb" class="bg-slate-900">F&B</option>
+                                        <option value="fashion" class="bg-slate-900">Fashion</option>
+                                    </select>
+                                </div>
+                                <div class="ios-input rounded-2xl px-4 py-3 flex items-center gap-3">
+                                    <i class="fa-regular fa-envelope text-slate-400"></i>
+                                    <input type="email" :placeholder="t('email')" class="bg-transparent w-full outline-none text-sm">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-indigo-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98] mt-4 flex items-center justify-center gap-2">
+                                <span x-text="authMode === 'login' ? t('enter_portal') : t('signup')"></span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </form>
+
+                        <p class="text-center text-xs text-slate-500 mt-6 cursor-pointer hover:text-indigo-400 transition" 
+                           @click="authMode = authMode === 'login' ? 'signup' : 'login'">
+                            <span x-text="authMode === 'login' ? 'Vendor baru? Daftar di sini.' : 'Sudah ada akaun? Log Masuk.'"></span>
+                        </p>
+                    </div>
+
+                    <div class="hidden md:flex bg-indigo-900/40 relative items-center justify-center overflow-hidden">
+                        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
+                        <div class="relative z-10 p-10 text-center">
+                            <h3 class="text-2xl font-bold mb-4">Grow Your Event Business</h3>
+                            <p class="text-indigo-200 text-sm">All-in-one platform for booth management, orders, and logistics.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="isAuthenticated && currentPage === 'dashboard'" class="p-6 md:p-10 pb-32 max-w-6xl mx-auto space-y-8 fade-enter-active">
+                <header>
+                    <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-indigo-200" x-text="t('welcome')"></h1>
+                    <p class="text-slate-400 mt-1" x-text="t('subtitle')"></p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="ios-glass-card p-6 flex items-start justify-between relative overflow-hidden group">
+                        <div class="relative z-10">
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2" x-text="t('status_booth')"></p>
+                            <h3 class="text-2xl font-bold text-emerald-400">Confirmed</h3>
+                            <p class="text-xs text-emerald-500/70 mt-1"><i class="fa-solid fa-check-circle"></i> Ready</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-shop"></i>
+                        </div>
+                    </div>
+
+                    <div class="ios-glass-card p-6 flex items-start justify-between relative overflow-hidden group">
+                        <div class="relative z-10">
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2" x-text="t('deadline')"></p>
+                            <h3 class="text-2xl font-bold text-red-400">3 <span class="text-sm font-normal text-slate-400" x-text="t('days_left')"></span></h3>
+                            <p class="text-xs text-slate-500 mt-1">20 Jan 2026</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 group-hover:scale-110 transition">
+                            <i class="fa-regular fa-clock"></i>
+                        </div>
+                    </div>
+
+                    <div class="ios-glass-card p-6 flex items-start justify-between relative overflow-hidden group">
+                        <div class="relative z-10">
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2" x-text="t('balance')"></p>
+                            <h3 class="text-2xl font-bold text-sky-400">RM 0.00</h3>
+                            <p class="text-xs text-sky-500/70 mt-1">All Paid</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-400 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative rounded-3xl overflow-hidden p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-white/10">
+                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-900/80 to-purple-900/80 backdrop-blur-md"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-bold text-white mb-2">Perlukan barang tambahan?</h3>
+                        <p class="text-indigo-200 text-sm max-w-md">Sila buat tempahan meja, kerusi, dan plug point sebelum tarikh tutup.</p>
+                    </div>
+                    <button @click="currentPage = 'order'" class="relative z-10 bg-white text-indigo-900 px-6 py-3 rounded-full font-bold text-sm shadow-lg hover:bg-indigo-50 transition transform hover:scale-105">
+                        <i class="fa-solid fa-plus mr-2"></i> <span x-text="t('order')"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div x-show="isAuthenticated && currentPage === 'order'" class="p-6 md:p-10 pb-40 max-w-5xl mx-auto space-y-6 fade-enter-active">
+                <h2 class="text-2xl font-bold" x-text="t('order')"></h2>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <template x-for="p in products" :key="p.id">
+                        <div class="ios-glass-card p-3 flex flex-col hover:border-indigo-500/50 transition cursor-pointer group">
+                            <div class="relative rounded-xl overflow-hidden mb-3 aspect-square bg-black/20">
+                                <img :src="p.img" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-500 group-hover:scale-110">
+                                <div class="absolute top-2 right-2 bg-black/60 backdrop-blur px-2 py-1 rounded-lg text-xs font-bold text-white">
+                                    RM <span x-text="p.price"></span>
+                                </div>
+                            </div>
+                            <h4 class="font-medium text-sm text-slate-200 line-clamp-1" x-text="lang === 'en' ? p.name_en : p.name_ms"></h4>
+                            
+                            <div class="mt-auto pt-3 flex items-center justify-between">
+                                <button @click="addToCart(p.id, -1)" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition text-slate-300">-</button>
+                                <span class="font-bold w-6 text-center" x-text="cart[p.id] || 0"></span>
+                                <button @click="addToCart(p.id, 1)" class="w-8 h-8 rounded-full bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center transition text-white shadow-lg shadow-indigo-500/30">+</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+             <div x-show="isAuthenticated && (currentPage === 'rules' || currentPage === 'logistics' || currentPage === 'invoices')" class="p-10 flex flex-col items-center justify-center h-[60vh] text-center fade-enter-active">
+                <div class="w-20 h-20 rounded-full bg-slate-800/50 flex items-center justify-center text-4xl text-slate-500 mb-4 animate-pulse">
+                    <i class="fa-solid fa-wrench"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-300">Under Construction</h3>
+                <p class="text-slate-500 text-sm mt-2">Content for <span x-text="currentPage"></span> will be available soon.</p>
+            </div>
+
+        </main>
+
+        <div x-show="isAuthenticated && currentPage === 'order'" 
+             class="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-[300px] md:max-w-3xl md:mx-auto ios-glass rounded-full p-2 pl-6 flex items-center justify-between z-40 animate-slide-up shadow-2xl border border-indigo-500/20">
+            <div>
+                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold" x-text="t('cart_total')"></p>
+                <p class="text-xl font-bold text-white">RM <span x-text="getCartTotal()"></span></p>
+            </div>
+            <button @click="alert('Proceed to Checkout')" class="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-indigo-500/40 transition flex items-center gap-2">
+                <span x-text="t('submit_order')"></span>
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+        </div>
+
+        <nav x-show="isAuthenticated" class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0f172a]/90 backdrop-blur-xl border-t border-white/10 flex justify-around items-center h-16 z-50 px-2 pb- safe-area-bottom">
+            <template x-for="item in ['dashboard', 'rules', 'order', 'invoices']">
+                <button @click="currentPage = item" 
+                        class="flex flex-col items-center justify-center w-full h-full space-y-1 transition duration-200"
+                        :class="currentPage === item ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300'">
+                    
+                    <template x-if="item === 'order'">
+                        <div class="relative">
+                            <div :class="currentPage === item ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/40' : 'bg-slate-800 text-slate-400'" 
+                                 class="w-10 h-10 rounded-xl flex items-center justify-center -mt-4 transition-all border-4 border-[#0f172a]">
+                                <i class="fa-solid fa-plus text-lg"></i>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="item !== 'order'">
+                        <i :class="{
+                            'fa-house': item === 'dashboard',
+                            'fa-book-open': item === 'rules',
+                            'fa-file-invoice': item === 'invoices'
+                        }" class="text-xl mb-0.5"></i>
+                    </template>
+                    
+                    <span class="text-[10px] font-medium capitalize" x-text="item === 'dashboard' ? 'Home' : item"></span>
+                </button>
+            </template>
+        </nav>
+
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
