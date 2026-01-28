@@ -217,7 +217,42 @@
                 </div>
             </div>
 
-             <div x-show="isAuthenticated && (currentPage === 'rules' || currentPage === 'logistics' || currentPage === 'invoices')" class="p-10 flex flex-col items-center justify-center h-[60vh] text-center fade-enter-active">
+            <div x-show="isAuthenticated && currentPage === 'logistics'" class="p-6 md:p-10 pb-32 max-w-4xl mx-auto fade-enter-active">
+                <h2 class="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-indigo-200" x-text="t('logistics')"></h2>
+
+                <div class="ios-glass-card p-0 mb-8 overflow-hidden">
+                    <div class="h-32 bg-slate-800 relative">
+                        <img src="https://placehold.co/800x400/1e293b/cbd5e1?text=MITEC+KL+Location+Map" class="w-full h-full object-cover opacity-50">
+                        <div class="absolute bottom-4 left-4">
+                            <h3 class="font-bold text-white text-lg">MITEC, Kuala Lumpur</h3>
+                            <p class="text-xs text-slate-300"><i class="fa-solid fa-location-dot mr-1"></i> Hall 2, Booth A-12</p>
+                        </div>
+                    </div>
+                    <div class="p-4 flex gap-2">
+                        <button class="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-xs font-bold text-slate-300 border border-white/5 transition">
+                            <i class="fa-brands fa-waze mr-1 text-sky-400"></i> Waze
+                        </button>
+                        <button class="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-xs font-bold text-slate-300 border border-white/5 transition">
+                            <i class="fa-brands fa-google mr-1 text-red-400"></i> Google Maps
+                        </button>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-bold text-slate-300 mb-4">Event Schedule</h3>
+                <div class="space-y-0 pl-2">
+                    <template x-for="(event, index) in logisticsTimeline">
+                        <div class="relative pl-8 pb-8 border-l border-white/10 last:border-0">
+                            <div class="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                            
+                            <span class="text-xs font-bold text-indigo-400 mb-1 block" x-text="event.time"></span>
+                            <h4 class="text-white font-bold" x-text="event.title"></h4>
+                            <p class="text-sm text-slate-400 mt-1 leading-relaxed" x-text="event.desc"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="isAuthenticated && (currentPage === 'rules' || currentPage === 'invoices')" class="p-10 flex flex-col items-center justify-center h-[60vh] text-center fade-enter-active">
                 <div class="w-20 h-20 rounded-full bg-slate-800/50 flex items-center justify-center text-4xl text-slate-500 mb-4 animate-pulse">
                     <i class="fa-solid fa-wrench"></i>
                 </div>
@@ -228,44 +263,122 @@
         </main>
 
         <div x-show="isAuthenticated && currentPage === 'order'" 
-             class="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-[300px] md:max-w-3xl md:mx-auto ios-glass rounded-full p-2 pl-6 flex items-center justify-between z-40 animate-slide-up shadow-2xl border border-indigo-500/20">
+             class="fixed bottom-24 md:bottom-6 left-4 right-4 md:left-[300px] md:max-w-3xl md:mx-auto ios-glass rounded-full p-2 pl-6 flex items-center justify-between z-40 animate-slide-up shadow-2xl border border-indigo-500/20">
             <div>
                 <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold" x-text="t('cart_total')"></p>
                 <p class="text-xl font-bold text-white">RM <span x-text="getCartTotal()"></span></p>
             </div>
-            <button @click="alert('Proceed to Checkout')" class="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-indigo-500/40 transition flex items-center gap-2">
+            <button @click="openCheckout()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-indigo-500/40 transition flex items-center gap-2">
                 <span x-text="t('submit_order')"></span>
                 <i class="fa-solid fa-chevron-right text-xs"></i>
             </button>
         </div>
 
-        <nav x-show="isAuthenticated" class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0f172a]/90 backdrop-blur-xl border-t border-white/10 flex justify-around items-center h-16 z-50 px-2 pb- safe-area-bottom">
-            <template x-for="item in ['dashboard', 'rules', 'order', 'invoices']">
+        <nav x-show="isAuthenticated" class="md:hidden fixed bottom-0 left-0 right-0 bg-[#0f172a]/95 backdrop-blur-xl border-t border-white/10 grid grid-cols-5 items-end h-[70px] z-50 px-1 pb-4 safe-area-bottom shadow-2xl">
+            <template x-for="item in ['dashboard', 'rules', 'order', 'logistics', 'invoices']">
                 <button @click="currentPage = item" 
-                        class="flex flex-col items-center justify-center w-full h-full space-y-1 transition duration-200"
+                        class="flex flex-col items-center justify-center w-full h-full space-y-1 transition duration-200 group"
                         :class="currentPage === item ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300'">
                     
                     <template x-if="item === 'order'">
-                        <div class="relative">
-                            <div :class="currentPage === item ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/40' : 'bg-slate-800 text-slate-400'" 
-                                 class="w-10 h-10 rounded-xl flex items-center justify-center -mt-4 transition-all border-4 border-[#0f172a]">
+                        <div class="relative -top-4">
+                            <div :class="currentPage === item ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/40' : 'bg-slate-800 text-slate-400 border border-white/10'" 
+                                 class="w-12 h-12 rounded-full flex items-center justify-center transition-all transform group-active:scale-95">
                                 <i class="fa-solid fa-plus text-lg"></i>
                             </div>
                         </div>
                     </template>
-
+        
                     <template x-if="item !== 'order'">
-                        <i :class="{
-                            'fa-house': item === 'dashboard',
-                            'fa-book-open': item === 'rules',
-                            'fa-file-invoice': item === 'invoices'
-                        }" class="text-xl mb-0.5"></i>
+                        <div class="h-6 flex items-center">
+                            <i :class="{
+                                'fa-house': item === 'dashboard',
+                                'fa-book-open': item === 'rules',
+                                'fa-truck-fast': item === 'logistics',
+                                'fa-file-invoice': item === 'invoices'
+                            }" class="text-xl"></i>
+                        </div>
                     </template>
                     
-                    <span class="text-[10px] font-medium capitalize" x-text="item === 'dashboard' ? 'Home' : item"></span>
+                    <span class="text-[9px] font-medium uppercase tracking-wide" x-text="t(item)"></span>
                 </button>
             </template>
         </nav>
+
+        <div class="fixed inset-0 z-[60]" x-show="showCheckout" style="display: none;">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" 
+                 x-show="showCheckout"
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                 @click="showCheckout = false"></div>
+        
+            <div class="absolute bottom-0 left-0 right-0 md:top-0 md:flex md:items-center md:justify-center pointer-events-none">
+                <div class="bg-[#1e293b] md:rounded-2xl rounded-t-3xl w-full md:w-[480px] md:h-auto max-h-[85vh] flex flex-col pointer-events-auto border border-white/10 shadow-2xl transform transition-transform"
+                     x-show="showCheckout"
+                     x-transition:enter="translate-y-full md:translate-y-10 md:opacity-0 duration-300 ease-out"
+                     x-transition:enter-end="translate-y-0 md:translate-y-0 md:opacity-100"
+                     x-transition:leave="translate-y-full md:translate-y-10 md:opacity-0 duration-200 ease-in">
+                    
+                    <div class="w-full flex justify-center pt-3 pb-1 md:hidden">
+                        <div class="w-12 h-1.5 bg-slate-600 rounded-full"></div>
+                    </div>
+        
+                    <div class="p-6 border-b border-white/5">
+                        <h3 class="text-xl font-bold text-white" x-text="t('checkout_title')"></h3>
+                        <p class="text-sm text-slate-400" x-text="t('checkout_desc')"></p>
+                    </div>
+        
+                    <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                        <template x-for="item in getCartItems()" :key="item.id">
+                            <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-slate-700 bg-cover bg-center" :style="`background-image: url(${item.img})`"></div>
+                                    <div>
+                                        <p class="text-sm font-bold text-white" x-text="item.name"></p>
+                                        <p class="text-xs text-slate-400">RM <span x-text="item.price"></span> x <span x-text="item.qty"></span></p>
+                                    </div>
+                                </div>
+                                <p class="font-bold text-indigo-300">RM <span x-text="item.subtotal"></span></p>
+                            </div>
+                        </template>
+                    </div>
+        
+                    <div class="p-6 bg-[#0f172a] md:rounded-b-2xl border-t border-white/10">
+                        <div class="flex justify-between items-end mb-4">
+                            <span class="text-slate-400 text-sm">Total Amount</span>
+                            <span class="text-3xl font-bold text-white">RM <span x-text="getCartTotal()"></span></span>
+                        </div>
+                        
+                        <button @click="processPayment()" 
+                                :disabled="isSubmitting"
+                                class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition hover:scale-[1.02] active:scale-[0.98]">
+                            <i class="fa-solid fa-spinner fa-spin" x-show="isSubmitting"></i>
+                            <span x-show="!isSubmitting" x-text="t('confirm')"></span>
+                        </button>
+                        
+                        <button @click="showCheckout = false" class="w-full mt-3 text-slate-500 text-sm font-medium hover:text-slate-300" x-text="t('cancel')"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fixed inset-0 z-[70] bg-[#0f172a] flex items-center justify-center" 
+             x-show="showSuccess" 
+             x-transition:enter="opacity-0 duration-300" x-transition:enter-end="opacity-100"
+             style="display: none;">
+            
+            <div class="text-center p-8 max-w-sm">
+                <div class="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                    <i class="fa-solid fa-check text-4xl text-emerald-400"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-white mb-2" x-text="t('success_title')"></h2>
+                <p class="text-slate-400 mb-8" x-text="t('success_desc')"></p>
+                
+                <button @click="finishOrder()" class="bg-slate-800 border border-white/10 text-white px-8 py-3 rounded-full font-bold hover:bg-slate-700 transition">
+                    <span x-text="t('back_home')"></span>
+                </button>
+            </div>
+        </div>
 
     </div>
 
