@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Absolut Bazaar Vendor Portal</title>
+    <title>Absolut Bazaar - Vendor Portal</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* BASE SETUP */
+        /* DARK THEME SETUP */
         body { background-color: #050505; color: #f8fafc; font-family: sans-serif; }
+        
         [x-cloak] { display: none !important; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* INPUT STYLE (Reference Image Match) */
+        /* Custom Dark Inputs */
         .input-dark {
             background-color: #0f0f0f;
             border: 1px solid #333;
@@ -29,7 +30,7 @@
             background-color: #1a1a1a;
         }
 
-        /* AUTH TABS (Reference Image Match) */
+        /* Tabs Style */
         .auth-tab {
             color: #666;
             border-bottom: 2px solid transparent;
@@ -40,7 +41,7 @@
             border-bottom: 2px solid #fbbf24;
         }
 
-        /* SIDEBAR ACTIVE STATE */
+        /* Sidebar Active State */
         .nav-item.active {
             background-color: #fbbf24;
             color: #000;
@@ -56,7 +57,7 @@
             background-color: rgba(255,255,255,0.05);
         }
 
-        /* ORDER PILLS */
+        /* Order Pills */
         .cat-btn.active {
             background-color: #fbbf24;
             color: #000;
@@ -68,6 +69,10 @@
             color: #888;
             border: 1px solid #333;
         }
+
+        /* Animations */
+        .fade-enter-active { transition: opacity 0.3s ease; }
+        .fade-enter-start { opacity: 0; }
     </style>
 </head>
 
@@ -87,7 +92,7 @@
 
             <div class="flex text-sm font-bold uppercase tracking-wider border-b border-slate-800 bg-black sticky top-0 z-10">
                 <button @click="authMode = 'login'" :class="authMode === 'login' ? 'active' : ''" class="auth-tab flex-1 py-4 text-center">Log In</button>
-                <button @click="authMode = 'signup'" :class="authMode === 'signup' ? 'active' : ''" class="auth-tab flex-1 py-4 text-center">Vendor Registration</button>
+                <button @click="authMode = 'signup'" :class="authMode === 'signup' ? 'active' : ''" class="auth-tab flex-1 py-4 text-center">First Time Log In</button>
             </div>
 
             <div class="p-6 flex-1 overflow-y-auto scrollbar-hide bg-black">
@@ -126,7 +131,7 @@
                         <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Country</label>
                         <select x-model="user.country" class="w-full px-4 py-3 rounded-lg input-dark text-sm"><option value="Malaysia">Malaysia</option><option value="Singapore">Singapore</option><option value="Indonesia">Indonesia</option><option value="Brunei">Brunei</option></select>
                     </div>
-                    <button @click="login()" class="w-full bg-white text-black font-bold py-3.5 rounded-lg hover:bg-slate-200 transition mt-6">Vendor Registration</button>
+                    <button @click="login()" class="w-full bg-white text-black font-bold py-3.5 rounded-lg hover:bg-slate-200 transition mt-6">Confirm Registration</button>
                     <div class="h-6"></div>
                 </div>
             </div>
@@ -191,9 +196,7 @@
                 
                 <div class="flex overflow-x-auto gap-3 pb-2 scrollbar-hide">
                     <template x-for="cat in ['furniture', 'electrical', 'storage', 'pass', 'parking']">
-                        <button @click="activeCategory = cat" 
-                                :class="activeCategory === cat ? 'active' : ''"
-                                class="cat-btn px-5 py-2.5 rounded-full text-xs uppercase tracking-wide transition-all flex-shrink-0">
+                        <button @click="activeCategory = cat" :class="activeCategory === cat ? 'active' : ''" class="cat-btn px-5 py-2.5 rounded-full text-xs uppercase tracking-wide transition-all flex-shrink-0">
                             <span x-text="t(cat)"></span>
                         </button>
                     </template>
@@ -204,12 +207,9 @@
                         <div class="bg-[#0f0f0f] border border-slate-800 rounded-xl p-3 flex flex-col hover:border-amber-500/50 transition">
                             <div class="aspect-square rounded-lg bg-[#1a1a1a] mb-3 overflow-hidden relative">
                                 <img :src="p.img" class="w-full h-full object-cover opacity-80">
-                                <div class="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-[10px] font-bold text-amber-400 border border-slate-800">
-                                    RM <span x-text="p.price"></span>
-                                </div>
+                                <div class="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-[10px] font-bold text-amber-400 border border-slate-800">RM <span x-text="p.price"></span></div>
                             </div>
                             <h4 class="font-bold text-xs text-white mb-2 leading-tight h-8" x-text="t_prod(p)"></h4>
-                            
                             <div class="mt-auto flex items-center justify-between bg-black rounded-lg p-1 border border-slate-800">
                                 <button @click="addToCart(p.id, -1)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white">-</button>
                                 <span class="text-xs font-bold text-amber-400" x-text="cart[p.id] || 0"></span>
@@ -222,6 +222,25 @@
 
             <div x-show="currentPage === 'logistics'" class="space-y-6 fade-enter-active max-w-3xl">
                 <h1 class="text-2xl font-bold text-white">Logistics & Schedule</h1>
+                
+                <div class="bg-[#111] rounded-2xl border border-slate-800 overflow-hidden">
+                    <div class="h-32 bg-slate-900 relative">
+                        <img src="https://placehold.co/800x400/1e293b/cbd5e1?text=MITEC+KL+Map" class="w-full h-full object-cover opacity-30">
+                        <div class="absolute bottom-4 left-4">
+                            <h3 class="font-bold text-white text-lg">MITEC, Kuala Lumpur</h3>
+                            <p class="text-xs text-slate-300"><i class="fa-solid fa-location-dot mr-1 text-amber-500"></i> Hall 2, Booth A-12</p>
+                        </div>
+                    </div>
+                    <div class="p-4 flex gap-2">
+                        <button class="flex-1 bg-black hover:bg-[#222] py-2 rounded-lg text-xs font-bold text-white border border-slate-700 transition flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-waze text-sky-400"></i> Waze
+                        </button>
+                        <button class="flex-1 bg-black hover:bg-[#222] py-2 rounded-lg text-xs font-bold text-white border border-slate-700 transition flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-google text-red-400"></i> Google Maps
+                        </button>
+                    </div>
+                </div>
+
                 <div class="bg-[#111] rounded-2xl p-6 border border-slate-800 relative pl-8 space-y-8">
                     <div class="absolute left-6 top-6 bottom-6 w-0.5 bg-slate-800"></div>
                     <template x-for="event in logisticsTimeline">
@@ -243,7 +262,7 @@
 
                 <div class="bg-[#111] border border-slate-800 p-6 rounded-2xl flex items-center gap-6">
                     <div class="relative group">
-                        <img :src="user.logo || 'https://ui-avatars.com/api/?name=' + (user.brandName || 'V') + '&background=random'" class="w-20 h-20 rounded-full object-cover border-2 border-slate-700">
+                        <img :src="user.logo || 'https://ui-avatars.com/api/?name=' + (user.brandName || 'V') + '&background=random'" class="w-20 h-20 rounded-full object-cover border-4 border-[#222]">
                         <label class="absolute bottom-0 right-0 bg-white text-black w-7 h-7 rounded-full flex items-center justify-center cursor-pointer hover:bg-amber-400 transition">
                             <i class="fa-solid fa-camera text-xs"></i>
                             <input type="file" @change="handleLogoUpload" class="hidden" accept="image/*">
@@ -256,11 +275,34 @@
                     </div>
                 </div>
 
-                <div class="bg-[#111] p-6 rounded-2xl border border-slate-800 space-y-4">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase border-b border-slate-800 pb-2">Social Media</h3>
-                    <div class="relative"><i class="fa-brands fa-instagram absolute left-3 top-3 text-slate-500"></i><input type="url" x-model="user.socials.instagram" placeholder="https://instagram.com/..." class="w-full pl-10 pr-4 py-3 rounded-lg input-dark text-sm"></div>
-                    <div class="relative"><i class="fa-brands fa-tiktok absolute left-3 top-3 text-slate-500"></i><input type="url" x-model="user.socials.tiktok" placeholder="https://tiktok.com/@..." class="w-full pl-10 pr-4 py-3 rounded-lg input-dark text-sm"></div>
-                    <div class="relative"><i class="fa-brands fa-facebook absolute left-3 top-3 text-slate-500"></i><input type="url" x-model="user.socials.facebook" placeholder="https://facebook.com/..." class="w-full pl-10 pr-4 py-3 rounded-lg input-dark text-sm"></div>
+                <div class="space-y-4">
+                    <div class="bg-[#111] p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase border-b border-slate-800 pb-2">Business Details</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Brand Name</label><input type="text" x-model="user.brandName" class="w-full px-3 py-2 rounded-lg input-dark text-sm"></div>
+                            <div><label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Company Name</label><input type="text" x-model="user.companyName" class="w-full px-3 py-2 rounded-lg input-dark text-sm"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">PIC Name</label><input type="text" x-model="user.picName" class="w-full px-3 py-2 rounded-lg input-dark text-sm"></div>
+                            <div><label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Booth No</label><input type="text" x-model="user.boothNo" class="w-full px-3 py-2 rounded-lg input-dark text-sm"></div>
+                        </div>
+                        <div><label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Email</label><input type="email" x-model="user.email" class="w-full px-3 py-2 rounded-lg input-dark text-sm"></div>
+                        <div>
+                            <label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Phone</label>
+                            <div class="flex gap-2">
+                                <input type="text" x-model="user.phonePrefix" class="w-16 px-2 py-2 rounded-lg bg-black border border-slate-800 text-center text-sm text-slate-400" readonly>
+                                <input type="tel" x-model="user.phone" class="flex-1 px-3 py-2 rounded-lg input-dark text-sm">
+                            </div>
+                        </div>
+                        <div><label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Address</label><textarea x-model="user.address" class="w-full px-3 py-2 rounded-lg input-dark text-sm h-16 resize-none"></textarea></div>
+                    </div>
+
+                    <div class="bg-[#111] p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase border-b border-slate-800 pb-2">Social Media</h3>
+                        <div class="relative"><i class="fa-brands fa-instagram absolute left-3 top-2.5 text-slate-400"></i><input type="url" x-model="user.socials.instagram" placeholder="https://instagram.com/..." class="w-full pl-10 pr-4 py-2 rounded-lg input-dark text-sm"></div>
+                        <div class="relative"><i class="fa-brands fa-tiktok absolute left-3 top-2.5 text-slate-400"></i><input type="url" x-model="user.socials.tiktok" placeholder="https://tiktok.com/@..." class="w-full pl-10 pr-4 py-2 rounded-lg input-dark text-sm"></div>
+                        <div class="relative"><i class="fa-brands fa-facebook absolute left-3 top-2.5 text-slate-400"></i><input type="url" x-model="user.socials.facebook" placeholder="https://facebook.com/..." class="w-full pl-10 pr-4 py-2 rounded-lg input-dark text-sm"></div>
+                    </div>
                 </div>
             </div>
 
@@ -302,7 +344,7 @@
     </div>
 
     <div class="fixed inset-0 z-[60] flex items-center justify-center p-4" x-show="showCheckout" style="display: none;">
-        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" @click="showCheckout = false"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showCheckout = false"></div>
         <div class="relative w-full max-w-md bg-[#111] border border-slate-800 rounded-2xl p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-white">Order Summary</h3>
