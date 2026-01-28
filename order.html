@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absolut Bazaar - Order</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body x-data="orderApp()">
+
+    <div class="flex h-screen overflow-hidden p-4 gap-4 max-w-[1400px] mx-auto">
+        <aside class="hidden md:flex flex-col w-72 ios-glass p-6 h-full">
+            <div class="flex items-center gap-3 mb-10 px-2">
+                <div class="w-10 h-10 bg-[#D63384] rounded-full flex items-center justify-center text-white font-bold shadow-md">AB</div>
+                <h1 class="font-bold text-lg text-[#583a5e]">Vendor<br>Portal</h1>
+            </div>
+            <nav class="flex-1 space-y-2">
+                <a href="index.html" class="nav-pill w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium">
+                    <i class="fa-solid fa-house w-5 text-center text-lg"></i> <span>Dashboard</span>
+                </a>
+                <a href="order.html" class="nav-pill active w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium">
+                    <i class="fa-solid fa-bag-shopping w-5 text-center text-lg"></i> <span>Order</span>
+                </a>
+                <a href="rules.html" class="nav-pill w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium">
+                    <i class="fa-solid fa-book-open w-5 text-center text-lg"></i> <span>Rules</span>
+                </a>
+                <a href="index.html" class="nav-pill w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium">
+                    <i class="fa-solid fa-truck-fast w-5 text-center text-lg"></i> <span>Logistics</span>
+                </a>
+                <a href="index.html" class="nav-pill w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium">
+                    <i class="fa-solid fa-user w-5 text-center text-lg"></i> <span>Profile</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 h-full overflow-y-auto scrollbar-hide md:ios-glass p-4 md:p-8 rounded-[28px]">
+            <h1 class="text-2xl font-bold text-[#583a5e] mb-6">Add-on Orders</h1>
+            
+            <div class="flex overflow-x-auto gap-3 pb-4 scrollbar-hide">
+                <template x-for="cat in ['furniture', 'electrical', 'pass', 'parking']">
+                    <button @click="activeCategory = cat" :class="activeCategory === cat ? 'active' : ''" class="cat-btn px-5 py-2.5 rounded-full text-xs uppercase font-bold tracking-wide transition-all flex-shrink-0">
+                        <span x-text="cat"></span>
+                    </button>
+                </template>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <template x-for="p in products.filter(x => x.category === activeCategory)" :key="p.id">
+                    <div class="ios-glass-card p-3 flex flex-col h-full">
+                        <div class="aspect-square rounded-2xl bg-white mb-3 overflow-hidden relative shadow-inner p-2">
+                            <img :src="p.img" class="w-full h-full object-contain mix-blend-multiply">
+                            <div class="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[10px] font-bold text-[#D63384] shadow-sm">RM <span x-text="p.price"></span></div>
+                        </div>
+                        <h4 class="font-bold text-sm text-[#583a5e] mb-1 leading-tight" x-text="p.name"></h4>
+                        <div class="mt-auto pt-2 flex items-center justify-between">
+                            <button @click="addToCart(p.id, -1)" class="w-8 h-8 rounded-full bg-white shadow text-[#D63384] hover:scale-90 transition">-</button>
+                            <span class="text-sm font-bold text-[#583a5e]" x-text="cart[p.id] || 0"></span>
+                            <button @click="addToCart(p.id, 1)" class="w-8 h-8 rounded-full bg-[#D63384] shadow text-white hover:scale-110 transition">+</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </main>
+        
+        <div x-show="getCartTotal() > 0" class="fixed bottom-24 left-4 right-4 md:absolute md:bottom-8 md:left-auto md:right-8 md:w-80 ios-glass p-2 pl-6 flex items-center justify-between z-40">
+            <div>
+                <p class="text-[10px] text-[#583a5e] uppercase font-bold">Total</p>
+                <p class="text-lg font-bold text-[#D63384]">RM <span x-text="getCartTotal()"></span></p>
+            </div>
+            <button class="btn-primary px-6 py-2 text-sm shadow-lg">Checkout <i class="fa-solid fa-arrow-right ml-1"></i></button>
+        </div>
+    </div>
+
+    <nav class="md:hidden fixed bottom-4 left-4 right-4 ios-glass flex justify-between px-6 py-3 z-50">
+        <a href="index.html" class="text-[#583a5e]/60"><i class="fa-solid fa-house text-xl"></i></a>
+        <a href="order.html" class="text-[#D63384]"><i class="fa-solid fa-bag-shopping text-xl"></i></a>
+        <a href="rules.html" class="text-[#583a5e]/60"><i class="fa-solid fa-book-open text-xl"></i></a>
+        <a href="index.html" class="text-[#583a5e]/60"><i class="fa-solid fa-user text-xl"></i></a>
+    </nav>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('orderApp', () => ({
+                activeCategory: 'furniture',
+                cart: {},
+                products: [
+                    { id: 1, category: 'furniture', name: 'Banquet Table', price: 30, img: 'https://placehold.co/150/f472b6/fff?text=Table' },
+                    { id: 2, category: 'furniture', name: 'Plastic Chair', price: 5, img: 'https://placehold.co/150/f472b6/fff?text=Chair' },
+                    { id: 3, category: 'electrical', name: 'Plug Point 13A', price: 80, img: 'https://placehold.co/150/f472b6/fff?text=Plug' },
+                    { id: 4, category: 'pass', name: 'Extra Pass', price: 15, img: 'https://placehold.co/150/f472b6/fff?text=Pass' }
+                ],
+                addToCart(id, qty) { if(!this.cart[id]) this.cart[id]=0; this.cart[id]+=qty; if(this.cart[id]<0) this.cart[id]=0; },
+                getCartTotal() { let t=0; for(let [i,q] of Object.entries(this.cart)) { const p=this.products.find(x=>x.id==i); if(p) t+=p.price*q; } return t.toFixed(2); }
+            }));
+        });
+    </script>
+</body>
+</html>
