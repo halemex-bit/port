@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="ms" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,34 +10,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Setup Font & Colors */
+        /* Base Styles */
         body { background-color: #f8fafc; color: #1e293b; }
-        
         [x-cloak] { display: none !important; }
-        
-        /* Hide Scrollbar */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Custom Input */
+        /* Clean Inputs */
         .input-clean {
             background: #ffffff;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #cbd5e1;
             color: #0f172a;
             transition: all 0.2s;
         }
         .input-clean:focus {
-            border-color: #fbbf24; /* Amber-400 */
+            border-color: #f59e0b; /* Amber-500 */
             outline: none;
-            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
         }
 
-        /* Category Pill Active State */
+        /* Category Pills */
         .cat-btn.active {
-            background-color: #1e293b; /* Slate-900 */
-            color: #fbbf24; /* Amber-400 */
+            background-color: #1e293b;
+            color: #fbbf24;
             border-color: #1e293b;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .cat-btn {
             background-color: white;
@@ -45,7 +41,7 @@
             border: 1px solid #e2e8f0;
         }
 
-        /* Smooth Tabs */
+        /* Transitions */
         .fade-enter-active { transition: opacity 0.3s ease; }
         .fade-enter-start { opacity: 0; }
     </style>
@@ -53,12 +49,12 @@
 
 <body class="font-sans min-h-screen selection:bg-amber-100 selection:text-amber-800" x-data="vendorApp()">
 
-    <div class="fixed inset-0 z-0 pointer-events-none opacity-40">
-        <div class="absolute -top-24 -left-24 w-96 h-96 bg-amber-200 rounded-full blur-3xl opacity-20"></div>
-        <div class="absolute top-1/2 right-0 w-64 h-64 bg-slate-200 rounded-full blur-3xl opacity-20"></div>
+    <div class="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur border border-slate-200 rounded-full p-1 flex shadow-lg">
+        <button @click="setLang('ms')" :class="lang === 'ms' ? 'bg-slate-900 text-amber-400 font-bold' : 'text-slate-500 hover:text-slate-900'" class="px-3 py-1 rounded-full text-xs transition">BM</button>
+        <button @click="setLang('en')" :class="lang === 'en' ? 'bg-slate-900 text-amber-400 font-bold' : 'text-slate-500 hover:text-slate-900'" class="px-3 py-1 rounded-full text-xs transition">EN</button>
     </div>
 
-    <div class="relative z-10 w-full max-w-7xl mx-auto flex h-screen overflow-hidden bg-white/80 backdrop-blur-sm md:my-4 md:rounded-3xl md:border md:border-slate-200 md:shadow-2xl">
+    <div class="relative z-10 w-full max-w-7xl mx-auto flex h-screen overflow-hidden bg-white/90 backdrop-blur-sm md:my-4 md:rounded-3xl md:border md:border-slate-200 md:shadow-2xl">
 
         <aside class="hidden md:flex flex-col w-72 border-r border-slate-100 bg-white p-6" x-show="isAuthenticated">
             <div class="flex items-center justify-center mb-8">
@@ -71,16 +67,16 @@
                             :class="currentPage === item ? 'bg-slate-900 text-amber-400 font-bold shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
                             class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all capitalize">
                         <i :class="icons[item]" class="w-6 text-center text-lg"></i>
-                        <span x-text="labels[item]"></span>
+                        <span x-text="t(item)"></span>
                     </button>
                 </template>
             </nav>
 
             <div class="mt-auto border-t border-slate-100 pt-4 flex items-center gap-3">
-                <img :src="user.logo || 'https://placehold.co/100x100/e2e8f0/64748b?text=Logo'" class="w-10 h-10 rounded-full object-cover border border-slate-200">
+                <img :src="user.logo || 'https://ui-avatars.com/api/?name=Vendor&background=random'" class="w-10 h-10 rounded-full object-cover border border-slate-200">
                 <div class="min-w-0">
                     <p class="text-sm font-bold truncate text-slate-900" x-text="user.brandName || 'Vendor'"></p>
-                    <button @click="logout()" class="text-xs text-red-500 hover:text-red-700 font-medium">Log Keluar</button>
+                    <button @click="logout()" class="text-xs text-red-500 hover:text-red-700 font-medium" x-text="t('logout')"></button>
                 </div>
             </div>
         </aside>
@@ -90,69 +86,101 @@
             <header class="md:hidden sticky top-0 z-30 px-5 py-3 bg-white/90 backdrop-blur-md border-b border-slate-100 flex justify-between items-center shadow-sm" x-show="isAuthenticated">
                 <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-8 w-auto">
                 <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 overflow-hidden" @click="currentPage = 'profile'">
-                    <img :src="user.logo || 'https://placehold.co/100x100/e2e8f0/64748b?text=V'" class="w-full h-full object-cover">
+                    <img :src="user.logo || 'https://ui-avatars.com/api/?name=V'" class="w-full h-full object-cover">
                 </div>
             </header>
 
-            <div x-show="!isAuthenticated" class="min-h-screen flex items-center justify-center p-6" style="background-image: url('https://images.unsplash.com/photo-1519750783826-e2420f4d687f?auto=format&fit=crop&q=80'); background-size: cover; background-position: center;">
-                <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+            <div x-show="!isAuthenticated" class="min-h-screen flex items-center justify-center p-4 bg-slate-100" style="background-image: url('https://images.unsplash.com/photo-1519750783826-e2420f4d687f?auto=format&fit=crop&q=80'); background-size: cover; background-position: center;">
+                <div class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"></div>
 
-                <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="relative w-full max-w-[480px] bg-white rounded-2xl shadow-2xl overflow-hidden">
                     <div class="p-6 text-center border-b border-slate-100">
                         <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-12 mx-auto mb-2">
-                        <p class="text-slate-500 text-xs">Portal Rasmi Vendor</p>
+                        <p class="text-slate-500 text-xs font-medium" x-text="t('portal_title')"></p>
                     </div>
 
                     <div class="flex text-sm font-bold border-b border-slate-100 bg-slate-50">
-                        <button @click="authMode = 'login'" :class="authMode === 'login' ? 'text-amber-500 border-b-2 border-amber-500 bg-white' : 'text-slate-400'" class="flex-1 py-4 uppercase tracking-wide transition">
-                            Log Masuk
+                        <button @click="authMode = 'login'" :class="authMode === 'login' ? 'text-amber-600 border-b-2 border-amber-500 bg-white' : 'text-slate-400 hover:text-slate-600'" class="flex-1 py-4 uppercase tracking-wide transition">
+                            <span x-text="t('login_tab')"></span>
                         </button>
-                        <button @click="authMode = 'signup'" :class="authMode === 'signup' ? 'text-amber-500 border-b-2 border-amber-500 bg-white' : 'text-slate-400'" class="flex-1 py-4 uppercase tracking-wide transition">
-                            Daftar Vendor
+                        <button @click="authMode = 'signup'" :class="authMode === 'signup' ? 'text-amber-600 border-b-2 border-amber-500 bg-white' : 'text-slate-400 hover:text-slate-600'" class="flex-1 py-4 uppercase tracking-wide transition">
+                            <span x-text="t('signup_tab')"></span>
                         </button>
                     </div>
 
-                    <div class="p-8">
+                    <div class="p-6 md:p-8">
                         <div x-show="authMode === 'login'" class="space-y-4">
-                            <input type="email" placeholder="Email" class="w-full px-4 py-3 rounded-lg input-clean">
-                            <input type="password" placeholder="Password" class="w-full px-4 py-3 rounded-lg input-clean">
-                            <button @click="login()" class="w-full bg-slate-900 hover:bg-black text-amber-400 font-bold py-3 rounded-lg shadow-lg transition mt-2">Masuk Portal</button>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 mb-1 block">Email</label>
+                                <input type="email" placeholder="vendor@example.com" class="w-full px-4 py-3 rounded-lg input-clean">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 mb-1 block">Password</label>
+                                <input type="password" placeholder="••••••••" class="w-full px-4 py-3 rounded-lg input-clean">
+                            </div>
+                            <button @click="login()" class="w-full bg-slate-900 hover:bg-black text-amber-400 font-bold py-3.5 rounded-lg shadow-lg transition mt-2">
+                                <span x-text="t('enter_portal')"></span>
+                            </button>
                         </div>
 
-                        <div x-show="authMode === 'signup'" class="space-y-3 h-[50vh] overflow-y-auto scrollbar-hide pr-1">
-                            <p class="text-xs text-slate-500 mb-2">Sila isi maklumat booth anda:</p>
+                        <div x-show="authMode === 'signup'" class="space-y-3 h-[55vh] overflow-y-auto scrollbar-hide pr-1">
+                            <p class="text-xs text-slate-500 mb-2 italic text-center" x-text="t('signup_desc')"></p>
                             
                             <div class="grid grid-cols-2 gap-3">
-                                <input type="text" x-model="user.brandName" placeholder="Nama Brand" class="w-full px-4 py-3 rounded-lg input-clean text-sm">
-                                <input type="text" x-model="user.companyName" placeholder="Nama Syarikat" class="w-full px-4 py-3 rounded-lg input-clean text-sm">
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase">Brand Name</label>
+                                    <input type="text" x-model="user.brandName" class="w-full px-3 py-2.5 rounded-lg input-clean text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase">Company Name</label>
+                                    <input type="text" x-model="user.companyName" class="w-full px-3 py-2.5 rounded-lg input-clean text-sm">
+                                </div>
                             </div>
-                            <input type="text" x-model="user.picName" placeholder="Nama PIC" class="w-full px-4 py-3 rounded-lg input-clean text-sm">
                             
-                            <div class="flex gap-2">
-                                <select x-model="user.phonePrefix" class="px-2 py-3 rounded-lg input-clean text-sm w-24">
-                                    <option value="+60">🇲🇾 +60</option>
-                                    <option value="+65">🇸🇬 +65</option>
-                                    <option value="+62">🇮🇩 +62</option>
-                                    <option value="+673">🇧🇳 +673</option>
-                                </select>
-                                <input type="tel" x-model="user.phone" placeholder="No. Telefon" class="flex-1 px-4 py-3 rounded-lg input-clean text-sm">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase">PIC Name</label>
+                                <input type="text" x-model="user.picName" class="w-full px-3 py-2.5 rounded-lg input-clean text-sm">
                             </div>
-
-                            <input type="email" x-model="user.email" placeholder="Email Rasmi" class="w-full px-4 py-3 rounded-lg input-clean text-sm">
                             
                             <div class="grid grid-cols-2 gap-3">
-                                <select x-model="user.country" class="w-full px-2 py-3 rounded-lg input-clean text-sm">
-                                    <option value="Malaysia">Malaysia</option>
-                                    <option value="Singapore">Singapore</option>
-                                    <option value="Indonesia">Indonesia</option>
-                                    <option value="Brunei">Brunei</option>
-                                </select>
-                                <input type="text" x-model="user.boothNo" placeholder="Booth No (e.g A12)" class="w-full px-4 py-3 rounded-lg input-clean text-sm">
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase">Phone No.</label>
+                                    <div class="flex">
+                                        <select x-model="user.phonePrefix" @change="updateCountry()" class="px-1 py-2.5 rounded-l-lg input-clean text-xs border-r-0 bg-slate-50 font-bold w-16 text-center cursor-pointer">
+                                            <option value="+60">+60</option>
+                                            <option value="+65">+65</option>
+                                            <option value="+62">+62</option>
+                                            <option value="+673">+673</option>
+                                        </select>
+                                        <input type="tel" x-model="user.phone" placeholder="12345678" class="w-full px-2 py-2.5 rounded-r-lg input-clean text-sm border-l-0">
+                                    </div>
+                                    <p class="text-[9px] text-amber-600 mt-1 italic">*No dash/space</p>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase">Email</label>
+                                    <input type="email" x-model="user.email" placeholder="email@domain.com" class="w-full px-3 py-2.5 rounded-lg input-clean text-sm">
+                                </div>
                             </div>
 
-                            <textarea x-model="user.address" placeholder="Alamat Penuh" class="w-full px-4 py-3 rounded-lg input-clean text-sm h-20 resize-none"></textarea>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase">Full Address</label>
+                                <textarea x-model="user.address" placeholder="No. Jalan, Taman, Poskod, Negeri..." class="w-full px-3 py-2.5 rounded-lg input-clean text-sm h-20 resize-none"></textarea>
+                            </div>
 
-                            <button @click="login()" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-lg shadow-lg transition mt-4">Daftar Sekarang</button>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase">Country</label>
+                                    <input type="text" x-model="user.country" class="w-full px-3 py-2.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 text-sm font-bold cursor-not-allowed" readonly>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase">Booth No.</label>
+                                    <input type="text" x-model="user.boothNo" placeholder="e.g. A-12" class="w-full px-3 py-2.5 rounded-lg input-clean text-sm">
+                                </div>
+                            </div>
+
+                            <button @click="login()" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3.5 rounded-lg shadow-lg transition mt-4">
+                                <span x-text="t('submit_reg')"></span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -161,54 +189,30 @@
             <div x-show="isAuthenticated && currentPage === 'dashboard'" class="p-5 md:p-10 pb-32 max-w-5xl mx-auto space-y-6 animate-fade">
                 <header class="flex justify-between items-end border-b border-slate-200 pb-4">
                     <div>
-                        <h1 class="text-2xl font-bold text-slate-900">Utama</h1>
-                        <p class="text-slate-500 text-sm">Selamat datang, <span class="text-amber-600 font-bold" x-text="user.brandName"></span></p>
+                        <h1 class="text-2xl font-bold text-slate-900" x-text="t('dashboard')"></h1>
+                        <p class="text-slate-500 text-sm"><span x-text="t('welcome')"></span> <span class="text-amber-600 font-bold" x-text="user.brandName"></span></p>
                     </div>
                 </header>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-emerald-500">
-                        <p class="text-xs font-bold text-slate-400 uppercase">Status Booth</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase" x-text="t('status')"></p>
                         <h3 class="text-xl font-bold text-slate-800 mt-1">Confirmed</h3>
-                        <p class="text-xs text-emerald-600 mt-2 font-bold"><i class="fa-solid fa-check-circle"></i> Bayaran Selesai</p>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-amber-500">
-                        <p class="text-xs font-bold text-slate-400 uppercase">Tarikh Akhir Hantar</p>
-                        <h3 class="text-xl font-bold text-slate-800 mt-1">2 Hari Lagi</h3>
-                        <p class="text-xs text-slate-500 mt-2">Sila lengkapkan order.</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase" x-text="t('deadline')"></p>
+                        <h3 class="text-xl font-bold text-slate-800 mt-1">2 <span class="text-sm font-normal" x-text="t('days_left')"></span></h3>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-sky-500">
-                        <p class="text-xs font-bold text-slate-400 uppercase">Baki Bayaran</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase" x-text="t('balance')"></p>
                         <h3 class="text-xl font-bold text-slate-800 mt-1">RM 0.00</h3>
-                        <p class="text-xs text-sky-600 mt-2 font-bold">Tiada Tunggakan</p>
                     </div>
-                </div>
-
-                <h3 class="font-bold text-slate-700 text-sm mt-4">Menu Pintas</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <button @click="currentPage = 'order'" class="p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition text-left group">
-                        <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-plus"></i></div>
-                        <span class="font-bold text-slate-800 text-sm">Order Baru</span>
-                    </button>
-                    <button @click="currentPage = 'rules'" class="p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition text-left group">
-                        <div class="w-10 h-10 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-book"></i></div>
-                        <span class="font-bold text-slate-800 text-sm">Baca Rules</span>
-                    </button>
-                    <button @click="currentPage = 'profile'" class="p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition text-left group">
-                        <div class="w-10 h-10 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-pen"></i></div>
-                        <span class="font-bold text-slate-800 text-sm">Edit Profil</span>
-                    </button>
-                    <button @click="currentPage = 'invoices'" class="p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition text-left group">
-                        <div class="w-10 h-10 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-file-invoice"></i></div>
-                        <span class="font-bold text-slate-800 text-sm">Lihat Invois</span>
-                    </button>
                 </div>
             </div>
 
             <div x-show="isAuthenticated && currentPage === 'order'" class="p-5 md:p-10 pb-40 max-w-6xl mx-auto space-y-6 animate-fade">
                 <header>
-                    <h1 class="text-2xl font-bold text-slate-900">Tempahan Booth</h1>
-                    <p class="text-sm text-slate-500">Pilih kategori untuk melihat barang.</p>
+                    <h1 class="text-2xl font-bold text-slate-900" x-text="t('order')"></h1>
                 </header>
 
                 <div class="flex overflow-x-auto gap-3 pb-2 scrollbar-hide py-2">
@@ -216,7 +220,7 @@
                         <button @click="activeCategory = cat" 
                                 :class="activeCategory === cat ? 'active' : ''"
                                 class="cat-btn px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all flex-shrink-0 capitalize shadow-sm">
-                            <span x-text="catLabels[cat]"></span>
+                            <span x-text="t(cat)"></span>
                         </button>
                     </template>
                 </div>
@@ -230,7 +234,7 @@
                                     RM <span x-text="p.price"></span>
                                 </div>
                             </div>
-                            <h4 class="font-bold text-sm text-slate-800 mb-1 leading-tight" x-text="p.name"></h4>
+                            <h4 class="font-bold text-sm text-slate-800 mb-1 leading-tight" x-text="t_prod(p)"></h4>
                             
                             <div class="mt-auto flex items-center justify-between pt-2">
                                 <div class="flex items-center gap-2 bg-slate-50 rounded-lg p-1 w-full justify-between">
@@ -242,34 +246,28 @@
                         </div>
                     </template>
                 </div>
-                
-                <div x-show="products.filter(x => x.category === activeCategory).length === 0" class="text-center py-20 text-slate-400">
-                    <i class="fa-solid fa-box-open text-4xl mb-3 opacity-50"></i>
-                    <p class="text-sm">Tiada barang dalam kategori ini.</p>
-                </div>
             </div>
 
             <div x-show="isAuthenticated && currentPage === 'profile'" class="p-5 md:p-10 pb-32 max-w-4xl mx-auto space-y-6 animate-fade">
                 <header class="flex items-center justify-between border-b border-slate-200 pb-4">
-                    <h1 class="text-2xl font-bold text-slate-900">Profil Vendor</h1>
+                    <h1 class="text-2xl font-bold text-slate-900" x-text="t('profile')"></h1>
                     <button class="bg-amber-500 hover:bg-amber-600 text-black px-5 py-2 rounded-full text-xs font-bold shadow-lg shadow-amber-200 transition">
-                        <i class="fa-solid fa-save mr-2"></i> Simpan
+                        <i class="fa-solid fa-save mr-2"></i> <span x-text="t('save')"></span>
                     </button>
                 </header>
 
                 <div class="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col md:flex-row items-center gap-6 shadow-sm">
                     <div class="relative group">
-                        <img :src="user.logo || 'https://placehold.co/150x150/f1f5f9/94a3b8?text=Upload+Logo'" class="w-24 h-24 rounded-full object-cover border-4 border-slate-50 shadow-inner bg-slate-100">
+                        <img :src="user.logo || 'https://ui-avatars.com/api/?name=' + (user.brandName || 'V') + '&background=random'" class="w-24 h-24 rounded-full object-cover border-4 border-slate-50 shadow-inner bg-slate-100">
                         <label class="absolute bottom-0 right-0 bg-slate-900 text-white w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-amber-500 transition shadow-md">
                             <i class="fa-solid fa-camera text-xs"></i>
                             <input type="file" @change="handleLogoUpload" class="hidden" accept="image/*">
                         </label>
                     </div>
                     <div class="text-center md:text-left flex-1 w-full">
-                        <h2 class="text-xl font-bold text-slate-900" x-text="user.brandName || 'Nama Brand'"></h2>
-                        <p class="text-slate-500 text-sm mt-1" x-text="user.companyName || 'Nama Syarikat'"></p>
+                        <h2 class="text-xl font-bold text-slate-900" x-text="user.brandName || 'Brand Name'"></h2>
+                        <p class="text-slate-500 text-sm mt-1" x-text="user.companyName || 'Company Name'"></p>
                         <div class="mt-3 flex flex-wrap justify-center md:justify-start gap-2">
-                            <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200"><i class="fa-solid fa-shop mr-1"></i> <span x-text="user.boothNo || '-'"></span></span>
                             <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200"><i class="fa-solid fa-earth-asia mr-1"></i> <span x-text="user.country"></span></span>
                         </div>
                     </div>
@@ -277,76 +275,33 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-4 bg-white p-5 rounded-2xl border border-slate-200">
-                        <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-2">Info Hubungan</h3>
+                        <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-2">Info</h3>
+                        
+                        <div><label class="text-xs text-slate-500 font-bold mb-1">PIC Name</label><input type="text" x-model="user.picName" class="w-full px-3 py-2 rounded-lg input-clean text-sm"></div>
+                        <div><label class="text-xs text-slate-500 font-bold mb-1">Email</label><input type="email" x-model="user.email" class="w-full px-3 py-2 rounded-lg input-clean text-sm"></div>
                         
                         <div>
-                            <label class="text-xs text-slate-500 font-bold mb-1 block">Nama PIC</label>
-                            <input type="text" x-model="user.picName" class="w-full px-3 py-2 rounded-lg input-clean text-sm">
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-500 font-bold mb-1 block">Email</label>
-                            <input type="email" x-model="user.email" class="w-full px-3 py-2 rounded-lg input-clean text-sm">
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-500 font-bold mb-1 block">Telefon</label>
+                            <label class="text-xs text-slate-500 font-bold mb-1">Phone</label>
                             <div class="flex gap-2">
-                                <select x-model="user.phonePrefix" class="px-2 py-2 rounded-lg input-clean text-sm w-20">
-                                    <option>+60</option><option>+65</option><option>+62</option>
-                                </select>
+                                <input type="text" x-model="user.phonePrefix" class="w-16 px-2 py-2 rounded-lg bg-slate-100 text-center text-sm font-bold border border-slate-200" readonly>
                                 <input type="tel" x-model="user.phone" class="flex-1 px-3 py-2 rounded-lg input-clean text-sm">
                             </div>
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-500 font-bold mb-1 block">Alamat</label>
-                            <textarea x-model="user.address" class="w-full px-3 py-2 rounded-lg input-clean text-sm h-16 resize-none"></textarea>
                         </div>
                     </div>
 
                     <div class="space-y-4 bg-white p-5 rounded-2xl border border-slate-200">
-                        <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-2">Media Sosial (Optional)</h3>
-                        <p class="text-xs text-slate-400 italic">Pastikan link bermula dengan https://</p>
-                        
-                        <div class="relative">
-                            <i class="fa-brands fa-instagram absolute left-3 top-2.5 text-pink-600 text-lg"></i>
-                            <input type="url" x-model="user.socials.instagram" placeholder="https://instagram.com/..." class="w-full pl-10 pr-4 py-2 rounded-lg input-clean text-sm">
-                        </div>
-                        <div class="relative">
-                            <i class="fa-brands fa-tiktok absolute left-3 top-2.5 text-black text-lg"></i>
-                            <input type="url" x-model="user.socials.tiktok" placeholder="https://tiktok.com/@..." class="w-full pl-10 pr-4 py-2 rounded-lg input-clean text-sm">
-                        </div>
-                        <div class="relative">
-                            <i class="fa-brands fa-facebook absolute left-3 top-2.5 text-blue-600 text-lg"></i>
-                            <input type="url" x-model="user.socials.facebook" placeholder="https://facebook.com/..." class="w-full pl-10 pr-4 py-2 rounded-lg input-clean text-sm">
-                        </div>
+                        <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-2">Social Media</h3>
+                        <div class="relative"><i class="fa-brands fa-instagram absolute left-3 top-2.5 text-pink-600 text-lg"></i><input type="url" x-model="user.socials.instagram" placeholder="https://instagram.com/..." class="w-full pl-10 pr-4 py-2 rounded-lg input-clean text-sm"></div>
+                        <div class="relative"><i class="fa-brands fa-tiktok absolute left-3 top-2.5 text-black text-lg"></i><input type="url" x-model="user.socials.tiktok" placeholder="https://tiktok.com/@..." class="w-full pl-10 pr-4 py-2 rounded-lg input-clean text-sm"></div>
+                        <div class="relative"><i class="fa-brands fa-facebook absolute left-3 top-2.5 text-blue-600 text-lg"></i><input type="url" x-model="user.socials.facebook" placeholder="https://facebook.com/..." class="w-full pl-10 pr-4 py-2 rounded-lg input-clean text-sm"></div>
                     </div>
                 </div>
             </div>
 
-            <div x-show="isAuthenticated && currentPage === 'rules'" class="p-6 md:p-10 text-center animate-fade">
-                <i class="fa-solid fa-book-open text-4xl text-slate-300 mb-4"></i>
-                <h2 class="text-2xl font-bold text-slate-800">Peraturan & Manual</h2>
-                <p class="text-slate-500 mt-2">Akan dikemaskini oleh pihak pengurusan.</p>
-            </div>
-
-            <div x-show="isAuthenticated && currentPage === 'invoices'" class="p-6 md:p-10 text-center animate-fade">
-                <i class="fa-solid fa-file-invoice-dollar text-4xl text-slate-300 mb-4"></i>
-                <h2 class="text-2xl font-bold text-slate-800">Invois Saya</h2>
-                <p class="text-slate-500 mt-2">Tiada invois dijumpai.</p>
-            </div>
-
-             <div x-show="isAuthenticated && currentPage === 'logistics'" class="p-6 md:p-10 pb-32 max-w-4xl mx-auto space-y-6 animate-fade">
-                <h2 class="text-2xl font-bold text-slate-900">Jadual Logistik</h2>
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative pl-10 space-y-8">
-                    <div class="absolute left-6 top-6 bottom-6 w-0.5 bg-slate-200"></div>
-                    <template x-for="event in logisticsTimeline">
-                        <div class="relative">
-                            <div class="absolute left-[-21px] top-1 w-3 h-3 rounded-full bg-slate-900 border-2 border-white shadow"></div>
-                            <span class="text-xs font-bold text-amber-600 mb-1 block" x-text="event.time"></span>
-                            <h4 class="text-slate-900 font-bold" x-text="event.title"></h4>
-                            <p class="text-sm text-slate-500" x-text="event.desc"></p>
-                        </div>
-                    </template>
-                </div>
+            <div x-show="isAuthenticated && (currentPage === 'rules' || currentPage === 'logistics' || currentPage === 'invoices')" class="p-10 text-center animate-fade h-[50vh] flex flex-col items-center justify-center">
+                <i class="fa-solid fa-person-digging text-4xl text-slate-300 mb-4"></i>
+                <h2 class="text-2xl font-bold text-slate-800" x-text="t(currentPage)"></h2>
+                <p class="text-slate-500 mt-2">Content coming soon.</p>
             </div>
 
         </main>
@@ -354,11 +309,11 @@
         <div x-show="isAuthenticated && currentPage === 'order'" 
              class="fixed bottom-24 md:bottom-10 left-4 right-4 md:left-[300px] md:max-w-2xl md:mx-auto bg-slate-900/90 backdrop-blur text-white rounded-full p-2 pl-6 flex items-center justify-between z-40 animate-slide-up shadow-2xl border border-slate-700">
             <div>
-                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Anggaran Total</p>
+                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold" x-text="t('total')"></p>
                 <p class="text-xl font-bold text-amber-400">RM <span x-text="getCartTotal()"></span></p>
             </div>
             <button @click="openCheckout()" class="bg-amber-500 hover:bg-amber-400 text-black px-6 py-2.5 rounded-full font-bold shadow-lg transition flex items-center gap-2">
-                <span>Checkout</span>
+                <span x-text="t('checkout')"></span>
                 <i class="fa-solid fa-arrow-right text-xs"></i>
             </button>
         </div>
@@ -382,7 +337,7 @@
                         <i :class="icons[item]" class="text-xl mb-0.5 transition-transform" :class="currentPage === item ? 'scale-110' : ''"></i>
                     </template>
                     
-                    <span class="text-[9px] font-bold capitalize" x-text="labels[item]"></span>
+                    <span class="text-[9px] font-bold capitalize" x-text="t(item)"></span>
                 </button>
             </template>
         </nav>
@@ -394,7 +349,7 @@
                      x-show="showCheckout" x-transition:enter="translate-y-full md:translate-y-10 opacity-0" x-transition:enter-end="translate-y-0 opacity-100">
                     
                     <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 md:rounded-t-2xl">
-                        <h3 class="text-lg font-bold text-slate-900">Ringkasan Order</h3>
+                        <h3 class="text-lg font-bold text-slate-900" x-text="t('summary')"></h3>
                         <button @click="showCheckout = false" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
                     </div>
 
@@ -404,7 +359,7 @@
                                 <div class="flex items-center gap-3">
                                     <img :src="item.img" class="w-12 h-12 rounded-lg object-cover bg-slate-50">
                                     <div>
-                                        <p class="text-sm font-bold text-slate-800" x-text="item.name"></p>
+                                        <p class="text-sm font-bold text-slate-800" x-text="t_prod(item)"></p>
                                         <p class="text-xs text-slate-500">RM <span x-text="item.price"></span> x <span x-text="item.qty"></span></p>
                                     </div>
                                 </div>
@@ -415,28 +370,15 @@
 
                     <div class="p-5 bg-white border-t border-slate-100 md:rounded-b-2xl">
                         <div class="flex justify-between items-end mb-4">
-                            <span class="text-slate-500 font-bold text-sm">Jumlah Besar</span>
+                            <span class="text-slate-500 font-bold text-sm" x-text="t('grand_total')"></span>
                             <span class="text-3xl font-bold text-amber-500">RM <span x-text="getCartTotal()"></span></span>
                         </div>
                         <button @click="processPayment()" :disabled="isSubmitting" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-4 rounded-xl shadow-lg flex justify-center gap-2 transition">
                             <i class="fa-solid fa-spinner fa-spin" x-show="isSubmitting"></i>
-                            <span x-show="!isSubmitting">Sahkan & Bayar</span>
+                            <span x-show="!isSubmitting" x-text="t('pay_now')"></span>
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="fixed inset-0 z-[70] bg-white flex items-center justify-center" x-show="showSuccess" style="display: none;" x-transition>
-            <div class="text-center p-8">
-                <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600 animate-bounce">
-                    <i class="fa-solid fa-check text-3xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-900">Berjaya!</h2>
-                <p class="text-slate-500 mt-2 mb-8">Tempahan anda telah direkodkan.</p>
-                <button @click="finishOrder()" class="bg-slate-100 hover:bg-slate-200 text-slate-900 px-8 py-3 rounded-full font-bold transition">
-                    Kembali ke Utama
-                </button>
             </div>
         </div>
 
@@ -445,13 +387,12 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('vendorApp', () => ({
-                currentPage: 'auth', // Default page
+                lang: 'ms', // Default Language
+                currentPage: 'auth',
                 authMode: 'login',
                 isAuthenticated: false,
-                activeCategory: 'furniture', // Default category
+                activeCategory: 'furniture',
                 showCheckout: false,
-                showSuccess: false,
-                isSubmitting: false,
 
                 // User Data
                 user: {
@@ -461,38 +402,55 @@
                     socials: { instagram: '', tiktok: '', facebook: '' }
                 },
 
-                // Labels & Icons for Nav
-                labels: { dashboard: 'Utama', rules: 'Rules', order: 'Order', logistics: 'Logistik', invoices: 'Invois', profile: 'Profil' },
-                icons: { dashboard: 'fa-house', rules: 'fa-book-open', order: 'fa-bag-shopping', logistics: 'fa-truck-fast', invoices: 'fa-file-invoice', profile: 'fa-user' },
-                catLabels: { furniture: 'Perabot', electrical: 'Elektrik', storage: 'Storan', pass: 'Pas', parking: 'Parkir' },
+                // Translations
+                text: {
+                    ms: {
+                        portal_title: 'Portal Rasmi Vendor', login_tab: 'Log Masuk', signup_tab: 'First Time Log In',
+                        signup_desc: 'Sila isi maklumat booth anda:', submit_reg: 'Daftar Sekarang', enter_portal: 'Masuk Portal',
+                        logout: 'Log Keluar', dashboard: 'Utama', rules: 'Rules', order: 'Order', logistics: 'Logistik', invoices: 'Invois', profile: 'Profil',
+                        welcome: 'Selamat datang,', status: 'Status Booth', deadline: 'Tarikh Akhir Hantar', balance: 'Baki Bayaran',
+                        days_left: 'Hari Lagi', furniture: 'Perabot', electrical: 'Elektrik', storage: 'Storan', pass: 'Pas', parking: 'Parkir',
+                        total: 'Anggaran Total', checkout: 'Checkout', summary: 'Ringkasan Order', grand_total: 'Jumlah Besar', pay_now: 'Sahkan & Bayar',
+                        save: 'Simpan'
+                    },
+                    en: {
+                        portal_title: 'Official Vendor Portal', login_tab: 'Log In', signup_tab: 'First Time Log In',
+                        signup_desc: 'Please fill in your booth details:', submit_reg: 'Register Now', enter_portal: 'Enter Portal',
+                        logout: 'Log Out', dashboard: 'Home', rules: 'Rules', order: 'Order', logistics: 'Logistics', invoices: 'Invoices', profile: 'Profile',
+                        welcome: 'Welcome,', status: 'Booth Status', deadline: 'Submission Deadline', balance: 'Outstanding',
+                        days_left: 'Days Left', furniture: 'Furniture', electrical: 'Electrical', storage: 'Storage', pass: 'Passes', parking: 'Parking',
+                        total: 'Est. Total', checkout: 'Checkout', summary: 'Order Summary', grand_total: 'Grand Total', pay_now: 'Confirm & Pay',
+                        save: 'Save'
+                    }
+                },
 
-                // Product Data (Updated with correct categories)
+                icons: { dashboard: 'fa-house', rules: 'fa-book-open', order: 'fa-bag-shopping', logistics: 'fa-truck-fast', invoices: 'fa-file-invoice', profile: 'fa-user' },
+
+                // Product Data (Dual Language Names)
                 products: [
-                    { id: 1, category: 'furniture', name: 'Meja Banquet', price: 30, img: 'https://placehold.co/150/f1f5f9/334155?text=Meja' },
-                    { id: 2, category: 'furniture', name: 'Kerusi Plastik', price: 5, img: 'https://placehold.co/150/f1f5f9/334155?text=Kerusi' },
-                    { id: 3, category: 'furniture', name: 'Meja Bulat', price: 45, img: 'https://placehold.co/150/f1f5f9/334155?text=Bulat' },
-                    { id: 4, category: 'electrical', name: 'Plug Point 13A', price: 80, img: 'https://placehold.co/150/f1f5f9/334155?text=Plug' },
-                    { id: 5, category: 'electrical', name: 'Kipas Industri', price: 150, img: 'https://placehold.co/150/f1f5f9/334155?text=Kipas' },
-                    { id: 6, category: 'storage', name: 'Kotak Simpanan', price: 25, img: 'https://placehold.co/150/f1f5f9/334155?text=Kotak' },
-                    { id: 7, category: 'pass', name: 'Pas Pekerja Tambahan', price: 15, img: 'https://placehold.co/150/f1f5f9/334155?text=Pas' },
-                    { id: 8, category: 'parking', name: 'Pas Parkir (3 Hari)', price: 50, img: 'https://placehold.co/150/f1f5f9/334155?text=Parkir' },
+                    { id: 1, category: 'furniture', name_ms: 'Meja Banquet', name_en: 'Banquet Table', price: 30, img: 'https://placehold.co/150/f1f5f9/334155?text=Meja' },
+                    { id: 2, category: 'furniture', name_ms: 'Kerusi Plastik', name_en: 'Plastic Chair', price: 5, img: 'https://placehold.co/150/f1f5f9/334155?text=Kerusi' },
+                    { id: 3, category: 'electrical', name_ms: 'Plug Point 13A', name_en: 'Plug Point 13A', price: 80, img: 'https://placehold.co/150/f1f5f9/334155?text=Plug' },
+                    { id: 4, category: 'electrical', name_ms: 'Kipas Industri', name_en: 'Industrial Fan', price: 150, img: 'https://placehold.co/150/f1f5f9/334155?text=Kipas' },
+                    { id: 5, category: 'storage', name_ms: 'Kotak Simpanan', name_en: 'Storage Box', price: 25, img: 'https://placehold.co/150/f1f5f9/334155?text=Box' },
+                    { id: 6, category: 'pass', name_ms: 'Pas Pekerja', name_en: 'Worker Pass', price: 15, img: 'https://placehold.co/150/f1f5f9/334155?text=Pas' },
+                    { id: 7, category: 'parking', name_ms: 'Pas Parkir', name_en: 'Parking Pass', price: 50, img: 'https://placehold.co/150/f1f5f9/334155?text=Parkir' },
                 ],
                 cart: {},
 
-                logisticsTimeline: [
-                    { time: '12 Mac', title: 'Persiapan Booth', desc: 'Vendor masuk bermula 2:00 PM.' },
-                    { time: '13 Mac', title: 'Hari Pertama', desc: 'Pintu dibuka 10:00 AM.' },
-                    { time: '15 Mac', title: 'Teardown', desc: 'Barang perlu keluar sebelum 12:00 AM.' },
-                ],
+                // Logic
+                t(key) { return this.text[this.lang][key] || key; },
+                t_prod(p) { return this.lang === 'ms' ? p.name_ms : p.name_en; },
+                setLang(val) { this.lang = val; },
 
-                // Methods
+                updateCountry() {
+                    const map = { '+60': 'Malaysia', '+65': 'Singapore', '+62': 'Indonesia', '+673': 'Brunei' };
+                    this.user.country = map[this.user.phonePrefix] || 'Others';
+                },
+
                 login() { 
-                    if(this.authMode === 'signup' && !this.user.brandName) {
-                        alert('Sila isi nama brand.'); return;
-                    }
-                    this.isAuthenticated = true; 
-                    this.currentPage = 'dashboard'; 
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if(this.authMode === 'signup' && !this.user.brandName) { alert('Sila isi nama brand.'); return; }
+                    this.isAuthenticated = true; this.currentPage = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
                 logout() { this.isAuthenticated = false; this.currentPage = 'auth'; this.cart = {}; },
                 
@@ -525,20 +483,14 @@
 
                 openCheckout() {
                     if (this.getCartTotal() > 0) this.showCheckout = true;
-                    else alert("Sila pilih barang dahulu.");
                 },
 
                 processPayment() {
-                    this.isSubmitting = true;
-                    setTimeout(() => {
-                        this.isSubmitting = false;
-                        this.showCheckout = false;
-                        this.showSuccess = true;
-                        this.cart = {};
-                    }, 1500);
-                },
-
-                finishOrder() { this.showSuccess = false; this.currentPage = 'dashboard'; }
+                    // Payment logic here
+                    alert("Payment Processed!");
+                    this.showCheckout = false;
+                    this.cart = {};
+                }
             }));
         });
     </script>
