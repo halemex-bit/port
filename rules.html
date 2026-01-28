@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absolut Bazaar - Rules</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body x-data>
+
+    <div class="flex h-screen overflow-hidden p-4 gap-4 max-w-[1400px] mx-auto">
+        <aside class="hidden md:flex flex-col w-72 ios-glass p-6 h-full">
+            <div class="flex items-center gap-3 mb-10 px-2">
+                <div class="w-10 h-10 bg-[#D63384] rounded-full flex items-center justify-center text-white font-bold shadow-md">AB</div>
+                <h1 class="font-bold text-lg text-[#583a5e]">Vendor<br>Portal</h1>
+            </div>
+            <nav class="flex-1 space-y-2">
+                <a href="index.html" class="nav-pill w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium">
+                    <i class="fa-solid fa-house w-5 text-center text-lg"></i> <span>Dashboard</span>
+                </a>
+                <a href="order.html" class="nav-pill w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium">
+                    <i class="fa-solid fa-bag-shopping w-5 text-center text-lg"></i> <span>Order</span>
+                </a>
+                <a href="rules.html" class="nav-pill active w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium">
+                    <i class="fa-solid fa-book-open w-5 text-center text-lg"></i> <span>Rules</span>
+                </a>
+                <a href="index.html" class="nav-pill w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium">
+                    <i class="fa-solid fa-truck-fast w-5 text-center text-lg"></i> <span>Logistics</span>
+                </a>
+                <a href="index.html" class="nav-pill w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium">
+                    <i class="fa-solid fa-user w-5 text-center text-lg"></i> <span>Profile</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 h-full overflow-y-auto scrollbar-hide md:ios-glass p-4 md:p-8 rounded-[28px]">
+            <h1 class="text-2xl font-bold text-[#583a5e] mb-6">Rules & Regulations</h1>
+            
+            <div class="grid gap-6">
+                 <div class="ios-glass-card p-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-[#D63384] shadow-inner"><i class="fa-solid fa-helmet-safety"></i></div>
+                        <h3 class="font-bold text-[#D63384] text-lg">Booth Construction</h3>
+                    </div>
+                    <p class="text-sm text-[#583a5e]/80 leading-relaxed">
+                        1. Maximum height for bare space booths is 2.5m.<br>
+                        2. All contractors must wear safety vests during setup.<br>
+                        3. No drilling into the hall floor is permitted.
+                    </p>
+                 </div>
+
+                 <div class="ios-glass-card p-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-[#D63384] shadow-inner"><i class="fa-solid fa-bolt"></i></div>
+                        <h3 class="font-bold text-[#D63384] text-lg">Electrical Safety</h3>
+                    </div>
+                    <p class="text-sm text-[#583a5e]/80 leading-relaxed">
+                        1. Do not use multi-plug extensions (heavy usage risks tripping).<br>
+                        2. Only certified electricians allowed for wiring works.<br>
+                        3. All electrical items must be SIRIM approved.
+                    </p>
+                 </div>
+            </div>
+        </main>
+    </div>
+
+    <nav class="md:hidden fixed bottom-4 left-4 right-4 ios-glass flex justify-between px-6 py-3 z-50">
+        <a href="index.html" class="text-[#583a5e]/60"><i class="fa-solid fa-house text-xl"></i></a>
+        <a href="order.html" class="text-[#583a5e]/60"><i class="fa-solid fa-bag-shopping text-xl"></i></a>
+        <a href="rules.html" class="text-[#D63384]"><i class="fa-solid fa-book-open text-xl"></i></a>
+        <a href="index.html" class="text-[#583a5e]/60"><i class="fa-solid fa-user text-xl"></i></a>
+    </nav>
+
+</body>
+</html>
