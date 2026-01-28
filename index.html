@@ -12,11 +12,54 @@
 
 <body x-data="vendorApp()">
 
-    <div class="flex h-screen overflow-hidden p-4 gap-4 max-w-[1400px] mx-auto">
+    <div x-show="!isAuthenticated" class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-white/20">
+        <div class="w-full max-w-md ios-glass overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+            
+            <div class="pt-8 pb-4 text-center">
+                <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-16 mx-auto object-contain mb-2 drop-shadow-md hover:scale-105 transition">
+            </div>
+
+            <div class="flex text-sm font-bold uppercase tracking-wider px-6 border-b border-white/40">
+                <button @click="authMode = 'login'" :class="authMode === 'login' ? 'text-[#D63384] border-b-2 border-[#D63384]' : 'text-gray-500 hover:text-[#D63384]'" class="flex-1 py-4 transition">Log Masuk</button>
+                <button @click="authMode = 'signup'" :class="authMode === 'signup' ? 'text-[#D63384] border-b-2 border-[#D63384]' : 'text-gray-500 hover:text-[#D63384]'" class="flex-1 py-4 transition">First Time Log In</button>
+            </div>
+
+            <div class="p-6 flex-1 overflow-y-auto scrollbar-hide">
+                <div x-show="authMode === 'login'" class="space-y-5 pt-2">
+                    <p class="text-sm text-[#583a5e]/70 text-center mb-4">Selamat kembali ke Portal Vendor.</p>
+                    <input type="email" placeholder="Email" class="w-full px-4 py-3 ios-input text-sm">
+                    <input type="password" placeholder="Password" class="w-full px-4 py-3 ios-input text-sm">
+                    <button @click="login()" class="w-full btn-primary py-3.5 mt-4 shadow-lg">Log Masuk</button>
+                </div>
+
+                <div x-show="authMode === 'signup'" class="space-y-4 pt-2">
+                    <p class="text-sm text-[#583a5e]/70 text-center mb-4">Daftarkan butiran booth anda.</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" x-model="user.companyName" placeholder="Company Name" class="w-full px-3 py-3 ios-input text-sm">
+                        <input type="text" x-model="user.brandName" placeholder="Brand Name" class="w-full px-3 py-3 ios-input text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" x-model="user.picName" placeholder="PIC Name" class="w-full px-3 py-3 ios-input text-sm">
+                        <input type="text" x-model="user.boothNo" placeholder="Booth No" class="w-full px-3 py-3 ios-input text-sm">
+                    </div>
+                    <input type="email" x-model="user.email" placeholder="Email" class="w-full px-4 py-3 ios-input text-sm">
+                    <div class="flex gap-2">
+                        <select x-model="user.phonePrefix" class="px-2 py-3 rounded-xl bg-[#FDF2F8] text-sm text-[#583a5e] border-none"><option value="+60">+60</option></select>
+                        <input type="tel" x-model="user.phone" placeholder="Phone" class="flex-1 px-4 py-3 ios-input text-sm">
+                    </div>
+                    <textarea x-model="user.address" placeholder="Address" class="w-full px-4 py-3 ios-input text-sm h-20 resize-none"></textarea>
+                    <button @click="login()" class="w-full btn-primary py-3.5 mt-6 shadow-lg">Sahkan Pendaftaran</button>
+                    <div class="h-6"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="isAuthenticated" class="flex h-screen overflow-hidden p-0 md:p-4 gap-4 max-w-[1400px] mx-auto">
+        
         <aside class="hidden md:flex flex-col w-72 ios-glass p-6 h-full">
-            <div class="flex items-center gap-3 mb-10 px-2">
-                <div class="w-10 h-10 bg-[#D63384] rounded-full flex items-center justify-center text-white font-bold shadow-md">AB</div>
-                <h1 class="font-bold text-lg text-[#583a5e]">Vendor<br>Portal</h1>
+            <div class="flex items-center justify-center mb-8">
+                <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-12 w-auto drop-shadow-md">
             </div>
             
             <nav class="flex-1 space-y-2">
@@ -36,35 +79,108 @@
                     <i class="fa-solid fa-user w-5 text-center text-lg"></i> <span>Profile</span>
                 </button>
             </nav>
+
+             <div class="mt-auto pt-4 flex items-center gap-3 border-t border-white/40">
+                <img :src="user.logo || 'https://ui-avatars.com/api/?name=V&background=F472B6&color=fff'" class="w-10 h-10 rounded-full shadow-md border-2 border-white">
+                <div class="min-w-0 text-left">
+                    <p class="text-sm font-bold truncate text-[#3F2A42]" x-text="user.brandName || 'Vendor'"></p>
+                    <button @click="logout()" class="text-xs text-[#D63384] font-bold hover:underline">Log Out</button>
+                </div>
+            </div>
         </aside>
 
-        <main class="flex-1 h-full overflow-y-auto scrollbar-hide md:ios-glass p-4 md:p-8 rounded-[28px]">
+        <main class="flex-1 h-full overflow-y-auto scrollbar-hide md:ios-glass p-4 md:p-8 rounded-[28px] relative">
             
+            <header class="md:hidden flex justify-between items-center mb-6 sticky top-0 bg-[#F8C8DC]/90 backdrop-blur z-20 py-2">
+                <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-8 object-contain drop-shadow-sm">
+                <div class="w-9 h-9 rounded-full bg-white shadow p-0.5" @click="currentPage = 'profile'">
+                    <img :src="user.logo || 'https://ui-avatars.com/api/?name=V&background=random'" class="w-full h-full rounded-full object-cover">
+                </div>
+            </header>
+
             <div x-show="currentPage === 'dashboard'" class="space-y-8">
                 <div>
                     <h1 class="text-3xl font-bold text-[#583a5e]">Dashboard</h1>
-                    <p class="text-[#D63384]/80 font-medium">Welcome back, <span class="text-[#D63384] font-bold">Absolut Brand</span></p>
+                    <p class="text-[#D63384]/80 font-medium">Welcome back, <span class="text-[#D63384] font-bold" x-text="user.brandName || 'Vendor'"></span></p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="ios-glass-card p-6 h-32 flex flex-col justify-between">
                         <div class="flex justify-between"><p class="text-xs font-bold text-[#D63384] uppercase">Status</p><i class="fa-solid fa-circle-check text-green-500 text-xl"></i></div>
                         <h3 class="text-2xl font-bold text-[#583a5e]">Confirmed</h3>
                     </div>
+                    <div class="ios-glass-card p-6 h-32 flex flex-col justify-between">
+                        <div class="flex justify-between"><p class="text-xs font-bold text-[#D63384] uppercase">Deadline</p><i class="fa-regular fa-clock text-amber-500 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-[#583a5e]">2 Days Left</h3>
                     </div>
+                    <div class="ios-glass-card p-6 h-32 flex flex-col justify-between">
+                        <div class="flex justify-between"><p class="text-xs font-bold text-[#D63384] uppercase">Outstanding</p><i class="fa-solid fa-file-invoice-dollar text-blue-500 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-[#583a5e]">RM 0.00</h3>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                     <div class="ios-glass-card p-4 flex items-center gap-3 hover:scale-[1.02] transition cursor-pointer">
+                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-[#D63384] shadow-inner"><i class="fa-solid fa-download"></i></div>
+                        <div><p class="font-bold text-sm text-[#583a5e]">Download Assets</p><p class="text-[10px] text-[#583a5e]/60">Logo & Bunting</p></div>
+                     </div>
+                     <div class="ios-glass-card p-4 flex items-center gap-3 hover:scale-[1.02] transition cursor-pointer" onclick="window.location.href='rules.html'">
+                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-[#D63384] shadow-inner"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div><p class="font-bold text-sm text-[#583a5e]">Safety Rules</p><p class="text-[10px] text-[#583a5e]/60">Read Policy</p></div>
+                     </div>
+                </div>
             </div>
 
-            <div x-show="currentPage === 'logistics'" class="space-y-6 max-w-3xl" style="display:none;">
+            <div x-show="currentPage === 'logistics'" class="space-y-6 max-w-3xl">
                 <h1 class="text-2xl font-bold text-[#583a5e]">Logistics Info</h1>
-                <div class="ios-glass-card p-6"><p>Peta dan Timeline event ada di sini...</p></div>
+                <div class="ios-glass-card overflow-hidden">
+                    <div class="h-32 bg-gray-200 relative">
+                        <img src="https://placehold.co/800x400/D63384/FFE4E1?text=MITEC+KL+Map" class="w-full h-full object-cover opacity-80 mix-blend-multiply">
+                        <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#583a5e]/80 to-transparent">
+                            <h3 class="font-bold text-white text-lg">MITEC, Kuala Lumpur</h3>
+                            <p class="text-xs text-white/80"><i class="fa-solid fa-location-dot mr-1"></i> Hall 2, Booth A-12</p>
+                        </div>
+                    </div>
+                    <div class="p-4 flex gap-3">
+                        <button class="flex-1 btn-secondary py-2 text-xs font-bold flex items-center justify-center gap-2"><i class="fa-brands fa-waze"></i> Waze</button>
+                        <button class="flex-1 btn-secondary py-2 text-xs font-bold flex items-center justify-center gap-2"><i class="fa-brands fa-google"></i> Maps</button>
+                    </div>
+                </div>
             </div>
 
-            <div x-show="currentPage === 'profile'" class="space-y-6" style="display:none;">
-                 <h1 class="text-2xl font-bold text-[#583a5e]">Profile</h1>
-                 </div>
+            <div x-show="currentPage === 'profile'" class="space-y-6 max-w-2xl">
+                <header class="flex items-center justify-between">
+                    <h1 class="text-2xl font-bold text-[#583a5e]">Profile</h1>
+                    <button class="btn-primary px-5 py-2 text-xs hover:scale-105 transition shadow-lg">Save Changes</button>
+                </header>
+                <div class="ios-glass-card p-6 flex items-center gap-6">
+                    <div class="relative group">
+                        <img :src="user.logo || 'https://ui-avatars.com/api/?name=' + (user.brandName || 'V') + '&background=random'" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md">
+                        <label class="absolute bottom-0 right-0 bg-[#D63384] text-white w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#b02a6b] transition shadow-md border border-white">
+                            <i class="fa-solid fa-camera text-xs"></i>
+                            <input type="file" @change="handleLogoUpload" class="hidden" accept="image/*">
+                        </label>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-[#583a5e]" x-text="user.brandName || 'Brand Name'"></h2>
+                        <p class="text-[#D63384] text-sm font-medium" x-text="user.companyName || 'Company Name'"></p>
+                    </div>
+                </div>
+                <div class="ios-glass-card p-6 space-y-4">
+                    <h3 class="text-xs font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2">Business Details</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" x-model="user.brandName" placeholder="Brand Name" class="w-full px-3 py-2 ios-input text-sm">
+                        <input type="text" x-model="user.companyName" placeholder="Company Name" class="w-full px-3 py-2 ios-input text-sm">
+                    </div>
+                     <div class="grid grid-cols-2 gap-4">
+                        <input type="text" x-model="user.picName" placeholder="PIC Name" class="w-full px-3 py-2 ios-input text-sm">
+                        <input type="text" x-model="user.boothNo" placeholder="Booth No" class="w-full px-3 py-2 ios-input text-sm">
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <nav class="md:hidden fixed bottom-4 left-4 right-4 ios-glass flex justify-between px-6 py-3 z-50">
+    <nav class="md:hidden fixed bottom-4 left-4 right-4 ios-glass flex justify-between px-6 py-3 z-50 shadow-2xl">
         <a href="index.html" class="text-[#D63384]"><i class="fa-solid fa-house text-xl"></i></a>
         <a href="order.html" class="text-[#583a5e]/60"><i class="fa-solid fa-bag-shopping text-xl"></i></a>
         <a href="rules.html" class="text-[#583a5e]/60"><i class="fa-solid fa-book-open text-xl"></i></a>
@@ -74,8 +190,17 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('vendorApp', () => ({
-                currentPage: 'dashboard', // Default page
-                // ... logic lain ...
+                authMode: 'login',
+                isAuthenticated: false,
+                currentPage: 'dashboard',
+                user: { companyName: '', brandName: '', picName: '', phonePrefix: '+60', phone: '', email: '', address: '', boothNo: '', logo: null },
+                
+                login() { 
+                    if(this.authMode==='signup' && !this.user.brandName) { alert('Sila masukkan nama brand'); return; }
+                    this.isAuthenticated = true; this.currentPage = 'dashboard';
+                },
+                logout() { this.isAuthenticated = false; this.authMode = 'login'; },
+                handleLogoUpload(e) { const f = e.target.files[0]; if(f) this.user.logo = URL.createObjectURL(f); }
             }));
         });
     </script>
