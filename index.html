@@ -3,429 +3,403 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Absolut Bazaar Vendor Portal</title>
+    <title>Absolut Bazaar - Vendor Portal</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Custom Gold/Black Theme */
-        body { background-color: #000000; color: #f8fafc; }
+        /* DARK THEME SETUP */
+        body { background-color: #050505; color: #f8fafc; font-family: sans-serif; }
         
-        .gold-text { color: #fbbf24; }
-        .gold-bg { background-color: #fbbf24; color: #000; }
-        .gold-border { border-color: #fbbf24; }
-        
-        .absolut-glass {
-            background: rgba(20, 20, 20, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .input-dark {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            color: white;
-            transition: all 0.3s;
-        }
-        .input-dark:focus {
-            border-color: #fbbf24;
-            outline: none;
-            box-shadow: 0 0 0 1px #fbbf24;
-        }
-
         [x-cloak] { display: none !important; }
-        
-        /* Hide Scrollbar but allow scroll */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Custom Dark Inputs (Match Image) */
+        .input-dark {
+            background-color: #0f0f0f;
+            border: 1px solid #333;
+            color: #fff;
+            transition: all 0.2s;
+        }
+        .input-dark:focus {
+            border-color: #fbbf24; /* Gold */
+            outline: none;
+            background-color: #1a1a1a;
+        }
+
+        /* Tabs Style (Match Image) */
+        .auth-tab {
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .auth-tab.active {
+            color: #fbbf24; /* Gold Text */
+            border-bottom: 2px solid #fbbf24; /* Gold Line */
+        }
+
+        /* Order Category Pills */
+        .cat-btn.active {
+            background-color: #fbbf24;
+            color: #000;
+            border-color: #fbbf24;
+            font-weight: bold;
+        }
+        .cat-btn {
+            background-color: #1a1a1a;
+            color: #888;
+            border: 1px solid #333;
+        }
+
+        /* Animations */
+        .fade-enter-active { transition: opacity 0.3s ease; }
+        .fade-enter-start { opacity: 0; }
     </style>
 </head>
 
-<body class="font-sans min-h-screen" x-data="vendorPortal()" x-cloak>
+<body class="min-h-screen selection:bg-amber-500 selection:text-black" x-data="vendorApp()">
 
-    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div class="absolute top-[-20%] left-[20%] w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[150px]"></div>
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-slate-900 to-black opacity-50"></div>
     </div>
 
-    <div class="relative z-10 w-full max-w-7xl mx-auto flex h-screen overflow-hidden">
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
+        <button @click="lang='ms'" :class="lang==='ms' ? 'text-amber-400 font-bold border-amber-400' : 'text-slate-500 border-transparent'" class="border-b text-xs px-1 transition">BM</button>
+        <button @click="lang='en'" :class="lang==='en' ? 'text-amber-400 font-bold border-amber-400' : 'text-slate-500 border-transparent'" class="border-b text-xs px-1 transition">EN</button>
+    </div>
 
-        <aside class="hidden md:flex flex-col w-72 h-full border-r border-white/10 bg-black p-6 transition-all" 
-               x-show="isAuthenticated" 
-               x-transition:enter="transition ease-out duration-300"
-               x-transition:enter-start="-translate-x-full opacity-0"
-               x-transition:enter-end="translate-x-0 opacity-100">
+    <div class="relative z-10 w-full max-w-md mx-auto min-h-screen flex flex-col md:justify-center md:py-10">
+
+        <div x-show="!isAuthenticated" class="flex-1 flex flex-col bg-black md:border md:border-slate-800 md:rounded-3xl shadow-2xl overflow-hidden relative">
             
-            <div class="flex items-center justify-center mb-10">
-                <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-12 w-auto object-contain">
+            <div class="pt-10 pb-6 text-center">
+                <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-10 mx-auto object-contain">
             </div>
 
-            <nav class="flex-1 space-y-2">
-                <template x-for="item in ['dashboard', 'rules', 'logistics', 'order', 'invoices']">
-                    <button @click="currentPage = item" 
-                            :class="currentPage === item ? 'bg-amber-500 text-black font-bold shadow-lg shadow-amber-500/20' : 'text-slate-400 hover:text-white hover:bg-white/5'"
-                            class="w-full flex items-center gap-4 px-4 py-3.5 rounded-lg transition-all duration-300 group">
-                        <i :class="{
-                            'fa-house': item === 'dashboard',
-                            'fa-book-open': item === 'rules',
-                            'fa-truck-fast': item === 'logistics',
-                            'fa-bag-shopping': item === 'order',
-                            'fa-file-invoice': item === 'invoices'
-                        }" class="text-lg w-6 text-center"></i>
-                        <span class="font-medium text-sm capitalize" x-text="t(item)"></span>
+            <div class="flex text-sm font-bold uppercase tracking-wider border-b border-slate-800">
+                <button @click="authMode = 'login'" :class="authMode === 'login' ? 'active' : ''" class="auth-tab flex-1 py-4 text-center">
+                    Log In
+                </button>
+                <button @click="authMode = 'signup'" :class="authMode === 'signup' ? 'active' : ''" class="auth-tab flex-1 py-4 text-center">
+                    Vendor Registration
+                </button>
+            </div>
+
+            <div class="p-6 flex-1 overflow-y-auto scrollbar-hide">
+                
+                <div x-show="authMode === 'login'" class="space-y-5 pt-4">
+                    <p class="text-slate-400 text-xs text-center mb-6">Welcome back, please login to your account.</p>
+                    
+                    <div>
+                        <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Email Address</label>
+                        <input type="email" class="w-full px-4 py-3 rounded-lg input-dark text-sm" placeholder="vendor@example.com">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Password</label>
+                        <input type="password" class="w-full px-4 py-3 rounded-lg input-dark text-sm" placeholder="••••••••">
+                    </div>
+
+                    <button @click="login()" class="w-full bg-white text-black font-bold py-3.5 rounded-lg hover:bg-slate-200 transition mt-6">
+                        Log In
+                    </button>
+                </div>
+
+                <div x-show="authMode === 'signup'" class="space-y-4 pt-2">
+                    <p class="text-slate-400 text-xs text-center mb-4">Register your booth details below.</p>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Company Name</label>
+                            <input type="text" x-model="user.companyName" class="w-full px-3 py-3 rounded-lg input-dark text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Brand Name</label>
+                            <input type="text" x-model="user.brandName" class="w-full px-3 py-3 rounded-lg input-dark text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">PIC Name</label>
+                            <input type="text" x-model="user.picName" class="w-full px-3 py-3 rounded-lg input-dark text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Booth Number</label>
+                            <input type="text" x-model="user.boothNo" placeholder="e.g A-12" class="w-full px-3 py-3 rounded-lg input-dark text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Email Address</label>
+                        <input type="email" x-model="user.email" class="w-full px-4 py-3 rounded-lg input-dark text-sm">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Phone Number</label>
+                        <div class="flex gap-2">
+                            <div class="relative w-24">
+                                <select x-model="user.phonePrefix" @change="updateCountry()" class="w-full px-2 py-3 rounded-lg input-dark text-sm appearance-none pl-8">
+                                    <option value="+60">+60</option>
+                                    <option value="+65">+65</option>
+                                    <option value="+62">+62</option>
+                                    <option value="+673">+673</option>
+                                </select>
+                                <span class="absolute left-3 top-3 text-lg" x-text="getFlag(user.phonePrefix)">🇲🇾</span>
+                                <i class="fa-solid fa-chevron-down absolute right-2 top-4 text-[10px] text-slate-500 pointer-events-none"></i>
+                            </div>
+                            <input type="tel" x-model="user.phone" placeholder="12 345 6789" class="flex-1 px-4 py-3 rounded-lg input-dark text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] text-slate-500 uppercase font-bold pl-1 mb-1 block">Address</label>
+                        <textarea x-model="user.address" class="w-full px-4 py-3 rounded-lg input-dark text-sm h-20 resize-none"></textarea>
+                    </div>
+
+                    <div>
+                        <div class="relative">
+                            <select x-model="user.country" class="w-full px-4 py-3 rounded-lg input-dark text-sm appearance-none">
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Singapore">Singapore</option>
+                                <option value="Indonesia">Indonesia</option>
+                                <option value="Brunei">Brunei</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-xs text-slate-500 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <button @click="login()" class="w-full bg-white text-black font-bold py-3.5 rounded-lg hover:bg-slate-200 transition shadow-lg mt-6">
+                        Vendor Registration
+                    </button>
+                    <div class="h-10"></div> </div>
+            </div>
+        </div>
+
+        <div x-show="isAuthenticated" class="flex-1 flex flex-col bg-black md:rounded-3xl md:border md:border-slate-800 overflow-hidden">
+            
+            <header class="px-6 py-5 bg-black border-b border-slate-800 flex justify-between items-center sticky top-0 z-20">
+                <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-6 w-auto">
+                <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden" @click="currentPage = 'profile'">
+                    <img :src="user.logo || 'https://placehold.co/100x100/1a1a1a/444?text=V'" class="w-full h-full object-cover">
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto scrollbar-hide p-5 pb-24">
+
+                <div x-show="currentPage === 'dashboard'" class="space-y-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Dashboard</h1>
+                        <p class="text-slate-500 text-sm">Welcome, <span class="text-amber-400" x-text="user.brandName"></span></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="bg-[#111] p-5 rounded-xl border border-slate-800 border-l-4 border-l-emerald-500">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase">Booth Status</p>
+                            <h3 class="text-lg font-bold text-white mt-1">Confirmed</h3>
+                        </div>
+                        <div class="bg-[#111] p-5 rounded-xl border border-slate-800 border-l-4 border-l-amber-500">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase">Submission Deadline</p>
+                            <h3 class="text-lg font-bold text-white mt-1">2 Days Left</h3>
+                        </div>
+                        <div class="bg-[#111] p-5 rounded-xl border border-slate-800 border-l-4 border-l-sky-500">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase">Outstanding</p>
+                            <h3 class="text-lg font-bold text-white mt-1">RM 0.00</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="currentPage === 'order'" class="space-y-6">
+                    <h1 class="text-2xl font-bold text-white">Booth Orders</h1>
+                    
+                    <div class="flex overflow-x-auto gap-3 pb-2 scrollbar-hide">
+                        <template x-for="cat in ['furniture', 'electrical', 'storage', 'pass', 'parking']">
+                            <button @click="activeCategory = cat" 
+                                    :class="activeCategory === cat ? 'active' : ''"
+                                    class="cat-btn px-5 py-2 rounded-full text-xs whitespace-nowrap transition-all flex-shrink-0 capitalize">
+                                <span x-text="t(cat)"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <template x-for="p in products.filter(x => x.category === activeCategory)" :key="p.id">
+                            <div class="bg-[#111] border border-slate-800 rounded-xl p-3 flex flex-col">
+                                <div class="aspect-square rounded-lg bg-[#222] mb-3 overflow-hidden relative">
+                                    <img :src="p.img" class="w-full h-full object-cover opacity-80">
+                                    <div class="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-[10px] font-bold text-amber-400 border border-slate-800">
+                                        RM <span x-text="p.price"></span>
+                                    </div>
+                                </div>
+                                <h4 class="font-bold text-xs text-white mb-2 leading-tight" x-text="t_prod(p)"></h4>
+                                
+                                <div class="mt-auto flex items-center justify-between bg-black rounded-lg p-1 border border-slate-800">
+                                    <button @click="addToCart(p.id, -1)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white">-</button>
+                                    <span class="text-xs font-bold text-amber-400" x-text="cart[p.id] || 0"></span>
+                                    <button @click="addToCart(p.id, 1)" class="w-8 h-8 flex items-center justify-center text-white hover:text-amber-400">+</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div x-show="products.filter(x => x.category === activeCategory).length === 0" class="text-center py-10 text-slate-600">
+                        <p class="text-sm">No items available.</p>
+                    </div>
+                </div>
+
+                <div x-show="currentPage === 'profile'" class="space-y-6">
+                    <header class="flex items-center justify-between">
+                        <h1 class="text-2xl font-bold text-white">Profile</h1>
+                        <button class="text-xs font-bold text-amber-400 border border-amber-400 px-4 py-1.5 rounded-full hover:bg-amber-400 hover:text-black transition">
+                            Save
+                        </button>
+                    </header>
+
+                    <div class="bg-[#111] border border-slate-800 p-6 rounded-2xl flex flex-col items-center gap-4">
+                        <div class="relative group">
+                            <img :src="user.logo || 'https://ui-avatars.com/api/?name=' + (user.brandName || 'V') + '&background=random'" class="w-24 h-24 rounded-full object-cover border-4 border-[#222]">
+                            <label class="absolute bottom-0 right-0 bg-white text-black w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-amber-400 transition">
+                                <i class="fa-solid fa-camera text-xs"></i>
+                                <input type="file" @change="handleLogoUpload" class="hidden" accept="image/*">
+                            </label>
+                        </div>
+                        <div class="text-center">
+                            <h2 class="text-xl font-bold text-white" x-text="user.brandName || 'Brand Name'"></h2>
+                            <p class="text-slate-500 text-sm" x-text="user.companyName || 'Company Name'"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-[#111] p-5 rounded-2xl border border-slate-800 space-y-4">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase border-b border-slate-800 pb-2">Info</h3>
+                            <div><label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">PIC Name</label><input type="text" x-model="user.picName" class="w-full px-3 py-2 rounded-lg input-dark text-sm"></div>
+                            <div><label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Phone</label><input type="tel" x-model="user.phone" class="w-full px-3 py-2 rounded-lg input-dark text-sm"></div>
+                            <div><label class="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Email</label><input type="email" x-model="user.email" class="w-full px-3 py-2 rounded-lg input-dark text-sm"></div>
+                        </div>
+
+                        <div class="bg-[#111] p-5 rounded-2xl border border-slate-800 space-y-4">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase border-b border-slate-800 pb-2">Social Media</h3>
+                            <div class="relative"><i class="fa-brands fa-instagram absolute left-3 top-2.5 text-slate-400"></i><input type="url" x-model="user.socials.instagram" placeholder="https://instagram.com/..." class="w-full pl-10 pr-4 py-2 rounded-lg input-dark text-sm"></div>
+                            <div class="relative"><i class="fa-brands fa-tiktok absolute left-3 top-2.5 text-slate-400"></i><input type="url" x-model="user.socials.tiktok" placeholder="https://tiktok.com/@..." class="w-full pl-10 pr-4 py-2 rounded-lg input-dark text-sm"></div>
+                            <div class="relative"><i class="fa-brands fa-facebook absolute left-3 top-2.5 text-slate-400"></i><input type="url" x-model="user.socials.facebook" placeholder="https://facebook.com/..." class="w-full pl-10 pr-4 py-2 rounded-lg input-dark text-sm"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="['rules', 'logistics', 'invoices'].includes(currentPage)" class="h-64 flex flex-col items-center justify-center text-slate-600">
+                    <i class="fa-solid fa-person-digging text-3xl mb-2"></i>
+                    <p class="text-sm">Coming Soon</p>
+                </div>
+
+            </main>
+
+            <div x-show="currentPage === 'order'" class="fixed bottom-24 left-4 right-4 bg-[#1a1a1a] border border-slate-700 rounded-full p-2 pl-6 flex items-center justify-between z-40 shadow-2xl md:absolute md:bottom-6 md:left-6 md:right-6">
+                <div>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold">Total</p>
+                    <p class="text-lg font-bold text-amber-400">RM <span x-text="getCartTotal()"></span></p>
+                </div>
+                <button @click="openCheckout()" class="bg-white text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-slate-200 transition">
+                    Checkout <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+
+            <nav class="bg-black border-t border-slate-800 grid grid-cols-5 items-center h-20 px-1 pb-4">
+                <template x-for="item in ['dashboard', 'rules', 'order', 'logistics', 'profile']">
+                    <button @click="currentPage = item" class="flex flex-col items-center justify-center w-full h-full space-y-1 group relative">
+                        <template x-if="item === 'order'">
+                            <div class="relative -top-4">
+                                <div :class="currentPage === item ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20' : 'bg-[#1a1a1a] text-slate-400 border border-slate-700'" class="w-12 h-12 rounded-full flex items-center justify-center transition-all">
+                                    <i class="fa-solid fa-bag-shopping text-lg"></i>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="item !== 'order'">
+                            <i :class="icons[item]" class="text-xl mb-1 transition-colors" :class="currentPage === item ? 'text-amber-400' : 'text-slate-600'"></i>
+                        </template>
+                        <span class="text-[9px] font-bold uppercase transition-colors" :class="currentPage === item ? 'text-white' : 'text-slate-600'" x-text="t(item)"></span>
                     </button>
                 </template>
             </nav>
 
-            <div class="mt-auto pt-6 border-t border-white/10">
-                <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
-                    <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-black font-bold">V</div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold truncate text-amber-500">Nasi Lemak Royale</p>
-                        <p class="text-xs text-slate-400">Booth A-12</p>
-                    </div>
-                    <button @click="logout()" class="text-slate-400 hover:text-red-400 transition"><i class="fa-solid fa-power-off"></i></button>
-                </div>
-            </div>
-        </aside>
-
-        <main class="flex-1 h-full overflow-y-auto overflow-x-hidden relative scrollbar-hide bg-black">
-            
-            <header class="md:hidden sticky top-0 z-30 px-6 py-4 bg-black/80 backdrop-blur-md border-b border-white/10 flex justify-between items-center" x-show="isAuthenticated">
-                <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-8 w-auto">
-                <div class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-500 text-xs font-bold">A-12</div>
-            </header>
-
-            <div x-show="!isAuthenticated" class="min-h-screen flex items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center">
-                <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-
-                <div class="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                    
-                    <div class="p-6 pb-2 text-center border-b border-white/5 bg-[#0a0a0a]">
-                        <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-14 mx-auto mb-2">
-                    </div>
-
-                    <div class="flex text-sm font-bold border-b border-white/10 bg-[#0a0a0a]">
-                        <button @click="authMode = 'login'" 
-                                :class="authMode === 'login' ? 'text-amber-400 border-b-2 border-amber-400 bg-white/5' : 'text-slate-500 hover:text-slate-300'"
-                                class="flex-1 py-4 text-center transition-all uppercase tracking-wide">
-                            <span x-text="t('login_tab')"></span>
-                        </button>
-                        <button @click="authMode = 'signup'" 
-                                :class="authMode === 'signup' ? 'text-amber-400 border-b-2 border-amber-400 bg-white/5' : 'text-slate-500 hover:text-slate-300'"
-                                class="flex-1 py-4 text-center transition-all uppercase tracking-wide">
-                            <span x-text="t('signup_tab')"></span>
-                        </button>
-                    </div>
-
-                    <div class="p-6 overflow-y-auto scrollbar-hide">
-                        
-                        <div x-show="authMode === 'login'" class="space-y-5" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
-                            <p class="text-slate-400 text-sm text-center mb-4" x-text="t('login_desc')"></p>
-                            
-                            <div>
-                                <label class="text-xs text-slate-400 mb-1 block font-bold uppercase" x-text="t('email')"></label>
-                                <input type="email" class="w-full px-4 py-3 rounded-lg input-dark text-sm" placeholder="vendor@example.com">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-400 mb-1 block font-bold uppercase">Password</label>
-                                <input type="password" class="w-full px-4 py-3 rounded-lg input-dark text-sm" placeholder="••••••••">
-                            </div>
-
-                            <button @click="login()" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3.5 rounded-lg shadow-lg shadow-amber-500/20 transition-all mt-4">
-                                <span x-text="t('login_tab')"></span>
-                            </button>
-                            
-                            <div class="flex justify-center mt-4">
-                                <div class="bg-black/40 p-1 rounded-full flex gap-1 border border-white/10">
-                                    <button @click="setLang('en')" :class="lang === 'en' ? 'bg-amber-500 text-black' : 'text-slate-400'" class="px-3 py-1 rounded-full text-xs font-bold transition">EN</button>
-                                    <button @click="setLang('ms')" :class="lang === 'ms' ? 'bg-amber-500 text-black' : 'text-slate-400'" class="px-3 py-1 rounded-full text-xs font-bold transition">BM</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div x-show="authMode === 'signup'" class="space-y-4" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
-                            <p class="text-slate-400 text-sm text-center mb-2" x-text="t('signup_desc')"></p>
-                            
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-[10px] text-slate-400 mb-1 block uppercase" x-text="t('company_name')"></label>
-                                    <input type="text" class="w-full px-3 py-2.5 rounded-lg input-dark text-sm">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] text-slate-400 mb-1 block uppercase" x-text="t('brand_name')"></label>
-                                    <input type="text" class="w-full px-3 py-2.5 rounded-lg input-dark text-sm">
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="col-span-1">
-                                    <label class="text-[10px] text-slate-400 mb-1 block uppercase" x-text="t('pic_name')"></label>
-                                    <input type="text" class="w-full px-3 py-2.5 rounded-lg input-dark text-sm">
-                                </div>
-                                <div class="col-span-1">
-                                    <label class="text-[10px] text-slate-400 mb-1 block uppercase" x-text="t('booth_no')"></label>
-                                    <input type="text" class="w-full px-3 py-2.5 rounded-lg input-dark text-sm" placeholder="e.g A-12">
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="text-[10px] text-slate-400 mb-1 block uppercase" x-text="t('email')"></label>
-                                <input type="email" class="w-full px-3 py-2.5 rounded-lg input-dark text-sm">
-                            </div>
-
-                            <div>
-                                <label class="text-[10px] text-slate-400 mb-1 block uppercase" x-text="t('phone')"></label>
-                                <div class="flex gap-2">
-                                    <select class="px-2 py-2.5 rounded-lg input-dark text-sm w-20" x-model="form.countryPrefix">
-                                        <option value="+60">🇲🇾 +60</option>
-                                        <option value="+65">🇸🇬 +65</option>
-                                        <option value="+62">🇮🇩 +62</option>
-                                        <option value="+673">🇧🇳 +673</option>
-                                    </select>
-                                    <input type="tel" class="flex-1 px-3 py-2.5 rounded-lg input-dark text-sm" placeholder="12 345 6789">
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="text-[10px] text-slate-400 mb-1 block uppercase" x-text="t('address')"></label>
-                                <textarea class="w-full px-3 py-2 rounded-lg input-dark text-sm h-16 resize-none mb-2"></textarea>
-                                <select class="w-full px-3 py-2.5 rounded-lg input-dark text-sm" x-model="form.country">
-                                    <option value="Malaysia">Malaysia</option>
-                                    <option value="Singapore">Singapore</option>
-                                    <option value="Indonesia">Indonesia</option>
-                                    <option value="Brunei">Brunei</option>
-                                    <option value="Others">Others</option>
-                                </select>
-                            </div>
-
-                            <button @click="login()" class="w-full bg-slate-100 hover:bg-white text-black font-bold py-3.5 rounded-lg shadow-lg transition-all mt-4">
-                                <span x-text="t('signup_tab')"></span>
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            <div x-show="isAuthenticated && currentPage === 'dashboard'" class="p-6 md:p-10 pb-32 max-w-6xl mx-auto space-y-8 fade-enter-active">
-                <header class="border-b border-white/10 pb-6">
-                    <h1 class="text-3xl font-bold text-amber-400" x-text="t('welcome')"></h1>
-                    <p class="text-slate-400 mt-1" x-text="t('subtitle')"></p>
-                </header>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="absolut-glass p-6 rounded-xl border-l-4 border-emerald-500 relative overflow-hidden group">
-                        <div class="relative z-10">
-                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2" x-text="t('status_booth')"></p>
-                            <h3 class="text-2xl font-bold text-emerald-400">Confirmed</h3>
-                            <p class="text-xs text-emerald-500/70 mt-1"><i class="fa-solid fa-check-circle"></i> Paid</p>
-                        </div>
-                    </div>
-
-                    <div class="absolut-glass p-6 rounded-xl border-l-4 border-amber-500 relative overflow-hidden group">
-                        <div class="relative z-10">
-                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2" x-text="t('deadline_label')"></p>
-                            <h3 class="text-2xl font-bold text-amber-400">3 <span class="text-sm font-normal text-slate-400" x-text="t('days_left')"></span></h3>
-                            <p class="text-xs text-slate-500 mt-1">20 Jan 2026</p>
-                        </div>
-                    </div>
-
-                    <div class="absolut-glass p-6 rounded-xl border-l-4 border-sky-500 relative overflow-hidden group">
-                        <div class="relative z-10">
-                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2" x-text="t('balance')"></p>
-                            <h3 class="text-2xl font-bold text-sky-400">RM 0.00</h3>
-                            <p class="text-xs text-sky-500/70 mt-1">Settled</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="relative rounded-2xl overflow-hidden p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-white/10 bg-gradient-to-r from-amber-900/40 to-black">
-                    <div class="relative z-10">
-                        <h3 class="text-xl font-bold text-white mb-2">Setup Booth Anda</h3>
-                        <p class="text-amber-100/70 text-sm max-w-md">Tempah meja, kerusi, dan kelengkapan elektrik tambahan.</p>
-                    </div>
-                    <button @click="currentPage = 'order'" class="relative z-10 bg-amber-500 text-black px-6 py-3 rounded-lg font-bold text-sm shadow-lg hover:bg-amber-400 transition transform hover:scale-105">
-                        <i class="fa-solid fa-plus mr-2"></i> <span x-text="t('order')"></span>
-                    </button>
-                </div>
-            </div>
-
-            <div x-show="isAuthenticated && currentPage === 'order'" class="p-6 md:p-10 pb-40 max-w-5xl mx-auto space-y-6 fade-enter-active">
-                <h2 class="text-2xl font-bold text-amber-400" x-text="t('order')"></h2>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <template x-for="p in products" :key="p.id">
-                        <div class="absolut-glass rounded-xl p-3 flex flex-col hover:border-amber-500/50 transition cursor-pointer group">
-                            <div class="relative rounded-lg overflow-hidden mb-3 aspect-square bg-black/50">
-                                <img :src="p.img" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-500 group-hover:scale-110">
-                                <div class="absolute top-2 right-2 bg-black/80 backdrop-blur px-2 py-1 rounded text-xs font-bold text-amber-400 border border-amber-500/20">
-                                    RM <span x-text="p.price"></span>
-                                </div>
-                            </div>
-                            <h4 class="font-medium text-sm text-slate-200 line-clamp-1" x-text="lang === 'en' ? p.name_en : p.name_ms"></h4>
-                            
-                            <div class="mt-auto pt-3 flex items-center justify-between">
-                                <button @click="addToCart(p.id, -1)" class="w-8 h-8 rounded bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition text-slate-300">-</button>
-                                <span class="font-bold w-6 text-center text-amber-400" x-text="cart[p.id] || 0"></span>
-                                <button @click="addToCart(p.id, 1)" class="w-8 h-8 rounded bg-amber-600 hover:bg-amber-500 flex items-center justify-center transition text-black font-bold">+</button>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <div x-show="isAuthenticated && currentPage === 'logistics'" class="p-6 md:p-10 pb-32 max-w-4xl mx-auto fade-enter-active">
-                <h2 class="text-3xl font-bold mb-6 text-amber-400" x-text="t('logistics')"></h2>
-
-                <div class="absolut-glass rounded-xl border-l-4 border-amber-500 p-0 mb-8 overflow-hidden">
-                    <div class="h-32 bg-slate-900 relative">
-                        <img src="https://placehold.co/800x400/1e293b/cbd5e1?text=MITEC+KL+Map" class="w-full h-full object-cover opacity-30">
-                        <div class="absolute bottom-4 left-4">
-                            <h3 class="font-bold text-white text-lg">MITEC, Kuala Lumpur</h3>
-                            <p class="text-xs text-slate-300"><i class="fa-solid fa-location-dot mr-1 text-amber-500"></i> Hall 2, Booth A-12</p>
-                        </div>
-                    </div>
-                    <div class="p-4 flex gap-2">
-                        <button class="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-xs font-bold text-slate-300 border border-white/5 transition">
-                            Waze
-                        </button>
-                        <button class="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-xs font-bold text-slate-300 border border-white/5 transition">
-                            Google Maps
-                        </button>
-                    </div>
-                </div>
-
-                <h3 class="text-lg font-bold text-slate-300 mb-4">Event Schedule</h3>
-                <div class="space-y-0 pl-2">
-                    <template x-for="(event, index) in logisticsTimeline">
-                        <div class="relative pl-8 pb-8 border-l border-white/10 last:border-0">
-                            <div class="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(251,191,36,0.5)]"></div>
-                            <span class="text-xs font-bold text-amber-500 mb-1 block" x-text="event.time"></span>
-                            <h4 class="text-white font-bold" x-text="event.title"></h4>
-                            <p class="text-sm text-slate-400 mt-1 leading-relaxed" x-text="event.desc"></p>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <div x-show="isAuthenticated && (currentPage === 'rules' || currentPage === 'invoices')" class="p-10 flex flex-col items-center justify-center h-[60vh] text-center fade-enter-active">
-                <div class="w-20 h-20 rounded-full bg-slate-900 flex items-center justify-center text-4xl text-slate-600 mb-4 border border-white/5">
-                    <i class="fa-solid fa-wrench"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-300">Coming Soon</h3>
-                <p class="text-slate-500 text-sm mt-2">Page <span x-text="currentPage"></span> is under maintenance.</p>
-            </div>
-
-        </main>
-
-        <div x-show="isAuthenticated && currentPage === 'order'" 
-             class="fixed bottom-24 md:bottom-6 left-4 right-4 md:left-[300px] md:max-w-3xl md:mx-auto absolut-glass rounded-xl p-3 pl-6 flex items-center justify-between z-40 animate-slide-up shadow-2xl border border-amber-500/20">
-            <div>
-                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold" x-text="t('cart_total')"></p>
-                <p class="text-xl font-bold text-amber-400">RM <span x-text="getCartTotal()"></span></p>
-            </div>
-            <button @click="openCheckout()" class="bg-amber-500 hover:bg-amber-400 text-black px-6 py-2.5 rounded-lg font-bold shadow-lg shadow-amber-500/20 transition flex items-center gap-2">
-                <span x-text="t('submit_order')"></span>
-                <i class="fa-solid fa-chevron-right text-xs"></i>
-            </button>
         </div>
-
-        <nav x-show="isAuthenticated" class="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10 grid grid-cols-5 items-end h-[70px] z-50 px-1 pb-4 safe-area-bottom shadow-2xl">
-            <template x-for="item in ['dashboard', 'rules', 'order', 'logistics', 'invoices']">
-                <button @click="currentPage = item" 
-                        class="flex flex-col items-center justify-center w-full h-full space-y-1 transition duration-200 group"
-                        :class="currentPage === item ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'">
-                    
-                    <template x-if="item === 'order'">
-                        <div class="relative -top-4">
-                            <div :class="currentPage === item ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/40' : 'bg-slate-800 text-slate-400 border border-white/10'" 
-                                 class="w-12 h-12 rounded-xl flex items-center justify-center transition-all transform group-active:scale-95">
-                                <i class="fa-solid fa-plus text-lg font-bold"></i>
-                            </div>
-                        </div>
-                    </template>
-        
-                    <template x-if="item !== 'order'">
-                        <div class="h-6 flex items-center">
-                            <i :class="{
-                                'fa-house': item === 'dashboard',
-                                'fa-book-open': item === 'rules',
-                                'fa-truck-fast': item === 'logistics',
-                                'fa-file-invoice': item === 'invoices'
-                            }" class="text-xl"></i>
-                        </div>
-                    </template>
-                    
-                    <span class="text-[9px] font-medium uppercase tracking-wide" x-text="t(item)"></span>
-                </button>
-            </template>
-        </nav>
-
-        <div class="fixed inset-0 z-[60]" x-show="showCheckout" style="display: none;">
-            <div class="absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity" @click="showCheckout = false"></div>
-        
-            <div class="absolute bottom-0 left-0 right-0 md:top-0 md:flex md:items-center md:justify-center pointer-events-none">
-                <div class="bg-[#0f0f0f] md:rounded-xl rounded-t-2xl w-full md:w-[480px] flex flex-col pointer-events-auto border border-white/10 shadow-2xl transform transition-transform"
-                     x-show="showCheckout"
-                     x-transition:enter="translate-y-full md:translate-y-10 opacity-0 duration-300"
-                     x-transition:enter-end="translate-y-0 opacity-100">
-                    
-                    <div class="w-full flex justify-center pt-3 pb-1 md:hidden"><div class="w-12 h-1.5 bg-slate-700 rounded-full"></div></div>
-        
-                    <div class="p-6 border-b border-white/10">
-                        <h3 class="text-xl font-bold text-white" x-text="t('checkout_title')"></h3>
-                        <p class="text-sm text-slate-400" x-text="t('checkout_desc')"></p>
-                    </div>
-        
-                    <div class="flex-1 overflow-y-auto p-6 space-y-4 max-h-[50vh]">
-                        <template x-for="item in getCartItems()" :key="item.id">
-                            <div class="flex justify-between items-center bg-white/5 p-3 rounded-lg border border-white/5">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded bg-slate-700 bg-cover bg-center" :style="`background-image: url(${item.img})`"></div>
-                                    <div>
-                                        <p class="text-sm font-bold text-white" x-text="item.name"></p>
-                                        <p class="text-xs text-slate-400">RM <span x-text="item.price"></span> x <span x-text="item.qty"></span></p>
-                                    </div>
-                                </div>
-                                <p class="font-bold text-amber-400">RM <span x-text="item.subtotal"></span></p>
-                            </div>
-                        </template>
-                    </div>
-        
-                    <div class="p-6 bg-black md:rounded-b-xl border-t border-white/10">
-                        <div class="flex justify-between items-end mb-4">
-                            <span class="text-slate-400 text-sm">Total Amount</span>
-                            <span class="text-3xl font-bold text-amber-400">RM <span x-text="getCartTotal()"></span></span>
-                        </div>
-                        
-                        <button @click="processPayment()" :disabled="isSubmitting"
-                                class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-4 rounded-lg shadow-lg flex items-center justify-center gap-2 transition">
-                            <i class="fa-solid fa-spinner fa-spin" x-show="isSubmitting"></i>
-                            <span x-show="!isSubmitting" x-text="t('confirm')"></span>
-                        </button>
-                        <button @click="showCheckout = false" class="w-full mt-3 text-slate-500 text-sm font-medium" x-text="t('cancel')"></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="fixed inset-0 z-[70] bg-black flex items-center justify-center" x-show="showSuccess" style="display: none;">
-            <div class="text-center p-8 max-w-sm">
-                <div class="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/30">
-                    <i class="fa-solid fa-check text-4xl text-emerald-400"></i>
-                </div>
-                <h2 class="text-3xl font-bold text-white mb-2" x-text="t('success_title')"></h2>
-                <p class="text-slate-400 mb-8" x-text="t('success_desc')"></p>
-                <button @click="finishOrder()" class="bg-white/10 border border-white/10 text-white px-8 py-3 rounded-lg font-bold hover:bg-white/20 transition">
-                    <span x-text="t('back_home')"></span>
-                </button>
-            </div>
-        </div>
-
     </div>
 
-    <script src="js/app.js"></script>
+    <div class="fixed inset-0 z-[60] flex items-center justify-center p-4" x-show="showCheckout" style="display: none;">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showCheckout = false"></div>
+        <div class="relative w-full max-w-md bg-[#111] border border-slate-800 rounded-2xl p-6 shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-4">Summary</h3>
+            <div class="space-y-3 max-h-60 overflow-y-auto mb-4">
+                <template x-for="item in getCartItems()" :key="item.id">
+                    <div class="flex justify-between items-center bg-[#000] p-3 rounded-lg border border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <img :src="item.img" class="w-10 h-10 rounded object-cover opacity-80">
+                            <div>
+                                <p class="text-xs font-bold text-white" x-text="t_prod(item)"></p>
+                                <p class="text-[10px] text-slate-500">RM <span x-text="item.price"></span> x <span x-text="item.qty"></span></p>
+                            </div>
+                        </div>
+                        <p class="font-bold text-amber-400 text-sm">RM <span x-text="item.subtotal"></span></p>
+                    </div>
+                </template>
+            </div>
+            <button @click="processPayment()" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-slate-200">Confirm Payment</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('vendorApp', () => ({
+                lang: 'en',
+                authMode: 'login',
+                isAuthenticated: false,
+                currentPage: 'auth',
+                activeCategory: 'furniture',
+                showCheckout: false,
+                user: {
+                    companyName: '', brandName: '', picName: '', 
+                    phonePrefix: '+60', phone: '', email: '', 
+                    address: '', country: 'Malaysia', boothNo: '', logo: null,
+                    socials: { instagram: '', tiktok: '', facebook: '' }
+                },
+                
+                icons: { dashboard: 'fa-house', rules: 'fa-book-open', order: 'fa-bag-shopping', logistics: 'fa-truck-fast', invoices: 'fa-file-invoice', profile: 'fa-user' },
+                
+                // Translations
+                text: {
+                    en: { dashboard: 'Home', rules: 'Rules', order: 'Order', logistics: 'Logistics', profile: 'Profile', furniture: 'Furniture', electrical: 'Electrical', storage: 'Storage', pass: 'Passes', parking: 'Parking' },
+                    ms: { dashboard: 'Utama', rules: 'Info', order: 'Order', logistics: 'Logistik', profile: 'Profil', furniture: 'Perabot', electrical: 'Elektrik', storage: 'Storan', pass: 'Pas', parking: 'Parkir' }
+                },
+
+                products: [
+                    { id: 1, category: 'furniture', name_ms: 'Meja Banquet', name_en: 'Banquet Table', price: 30, img: 'https://placehold.co/150/111/444?text=Table' },
+                    { id: 2, category: 'furniture', name_ms: 'Kerusi Plastik', name_en: 'Plastic Chair', price: 5, img: 'https://placehold.co/150/111/444?text=Chair' },
+                    { id: 3, category: 'electrical', name_ms: 'Plug Point 13A', name_en: 'Plug Point 13A', price: 80, img: 'https://placehold.co/150/111/444?text=Plug' },
+                    { id: 4, category: 'electrical', name_ms: 'Kipas Industri', name_en: 'Industrial Fan', price: 150, img: 'https://placehold.co/150/111/444?text=Fan' },
+                ],
+                cart: {},
+
+                // Methods
+                t(key) { return this.text[this.lang][key] || key; },
+                t_prod(p) { return this.lang === 'ms' ? p.name_ms : p.name_en; },
+                getFlag(prefix) { const map={'+60':'🇲🇾','+65':'🇸🇬','+62':'🇮🇩','+673':'🇧🇳'}; return map[prefix]||'🏳️'; },
+                updateCountry() { const map={'+60':'Malaysia','+65':'Singapore','+62':'Indonesia','+673':'Brunei'}; this.user.country = map[this.user.phonePrefix] || 'Others'; },
+                
+                login() { 
+                    if(this.authMode==='signup' && !this.user.brandName) { alert('Please enter brand name'); return; }
+                    this.isAuthenticated = true; this.currentPage = 'dashboard';
+                },
+                logout() { this.isAuthenticated = false; this.currentPage = 'auth'; this.cart = {}; },
+                handleLogoUpload(e) { const f = e.target.files[0]; if(f) this.user.logo = URL.createObjectURL(f); },
+                
+                addToCart(id, qty) { if(!this.cart[id]) this.cart[id]=0; this.cart[id]+=qty; if(this.cart[id]<0) this.cart[id]=0; },
+                getCartTotal() { let t=0; for(let [i,q] of Object.entries(this.cart)) { const p=this.products.find(x=>x.id==i); if(p) t+=p.price*q; } return t.toFixed(2); },
+                getCartItems() { return Object.entries(this.cart).filter(([_,q])=>q>0).map(([i,q])=>{ const p=this.products.find(x=>x.id==i); return {...p, qty:q, subtotal:(p.price*q).toFixed(2)}; }); },
+                openCheckout() { if(this.getCartTotal()>0) this.showCheckout=true; },
+                processPayment() { alert('Paid!'); this.showCheckout=false; this.cart={}; }
+            }));
+        });
+    </script>
 </body>
 </html>
