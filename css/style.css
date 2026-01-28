@@ -1,45 +1,174 @@
-/* Glassmorphism Premium (iOS Style) */
-.ios-glass {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+:root {
+  --bg: #F8C8DC;          /* Rose pink lembut untuk background */
+  --bg-alt: #FFE4E1;      /* Rose pink lebih cerah untuk elemen alt */
+  --primary: #D63384;     /* Deep rose pink untuk butang utama */
+  --primary-soft: #F472B6;/* Rose pink sederhana untuk hover/focus */
+  --text-main: #3F2A42;   /* Teks gelap untuk kontras */
+  --shadow-light: rgba(255, 255, 255, 0.9);
+  --shadow-dark: rgba(214, 51, 132, 0.15); /* Shadow berdasarkan rose pink */
 }
 
+/* Body background */
+body {
+  background: radial-gradient(circle at top left, #ffffff 0%, var(--bg) 40%, #F4C2D9 100%);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+/* Neumorphic main shell */
+.ios-glass {
+  background: var(--bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    18px 18px 40px var(--shadow-dark),
+    -18px -18px 40px var(--shadow-light);
+}
+
+/* Neumorphic cards */
 .ios-glass-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-    transition: all 0.3s ease;
+  background: var(--bg-alt);
+  border-radius: 20px;
+  box-shadow:
+    8px 8px 20px var(--shadow-dark),
+    -8px -8px 20px var(--shadow-light);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.ios-glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    10px 10px 24px var(--shadow-dark),
+    -10px -10px 24px var(--shadow-light);
 }
 
 .ios-glass-card:active {
-    transform: scale(0.98);
+  transform: translateY(1px);
+  box-shadow:
+    6px 6px 16px var(--shadow-dark),
+    -6px -6px 16px var(--shadow-light);
 }
 
+/* Inputs */
 .ios-input {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    transition: all 0.3s ease;
+  background: var(--bg-alt);
+  border-radius: 14px;
+  border: none;
+  box-shadow:
+    inset 3px 3px 6px rgba(214, 51, 132, 0.6),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.9);
+  transition: box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .ios-input:focus-within {
-    border-color: rgba(139, 92, 246, 0.5);
-    background: rgba(0, 0, 0, 0.4);
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.1);
+  background: var(--primary-soft);
+  box-shadow:
+    inset 2px 2px 4px rgba(214, 51, 132, 0.4),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.9);
 }
 
-/* Transitions */
-[x-cloak] { display: none !important; }
-
-.fade-enter-active, .fade-leave-active {
-    transition: opacity 0.3s ease, transform 0.3s ease;
+/* Primary button */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  background: linear-gradient(135deg, #D63384, #F472B6);
+  color: #ffffff;
+  border-radius: 999px;
+  border: none;
+  box-shadow:
+    6px 6px 14px rgba(214, 51, 132, 0.4),
+    -4px -4px 10px rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.fade-enter-start, .fade-leave-end {
-    opacity: 0;
-    transform: translateY(10px);
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    8px 8px 18px rgba(214, 51, 132, 0.45),
+    -5px -5px 12px rgba(255, 255, 255, 0.9);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow:
+    3px 3px 8px rgba(214, 51, 132, 0.5),
+    -2px -2px 5px rgba(255, 255, 255, 0.8);
+}
+
+/* Secondary / ghost buttons */
+.btn-secondary {
+  border-radius: 999px;
+  background: #FFE4E1;
+  color: #D63384;
+  padding: 0.55rem 0.9rem;
+  box-shadow:
+    3px 3px 8px rgba(214, 51, 132, 0.5),
+    -2px -2px 6px rgba(255, 255, 255, 0.9);
+  text-align: center;
+}
+
+/* Sidebar pills */
+.nav-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  background: transparent;
+  color: #3F2A42;
+  font-weight: 500;
+  box-shadow: inset 0 0 0 1px rgba(214, 51, 132, 0.25);
+}
+
+.nav-pill--active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-soft));
+  color: #ffffff;
+  box-shadow:
+    6px 6px 14px rgba(214, 51, 132, 0.45),
+    -3px -3px 10px rgba(255, 255, 255, 0.9);
+}
+
+/* Stats card */
+.stat-card {
+  background: #FFE4E1;
+  border-radius: 18px;
+  padding: 0.6rem 0.8rem;
+  box-shadow:
+    4px 4px 10px rgba(214, 51, 132, 0.6),
+    -3px -3px 8px rgba(255, 255, 255, 0.95);
+}
+
+/* Qty buttons */
+.qty-btn {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFE4E1;
+  box-shadow:
+    3px 3px 8px rgba(214, 51, 132, 0.7),
+    -2px -2px 6px rgba(255, 255, 255, 0.95);
+}
+
+/* Timeline dot */
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #D63384, #F472B6);
+  box-shadow:
+    0 0 0 4px rgba(248, 200, 220, 0.7),
+    3px 3px 6px rgba(214, 51, 132, 0.7);
+}
+
+/* Utility */
+[x-cloak] {
+  display: none !important;
 }
