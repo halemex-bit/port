@@ -4,48 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absolut Bazaar - Vendor Portal</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css"> 
     
     <style>
-        /* Animation untuk transition page yang smooth */
+        /* BASE & ANIMATION */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FDF2F8; color: #583a5e; }
+        [x-cloak] { display: none !important; }
         .fade-enter-active { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        [x-cloak] { display: none !important; }
+        .animate-bounce-in { animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3); } 50% { opacity: 1; transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
+
+        /* GLASSMORPHISM UI */
+        .ios-glass {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+        .ios-glass-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .ios-input {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(200, 200, 200, 0.5);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .ios-input:focus { outline: none; background: white; border-color: #D63384; box-shadow: 0 0 0 4px rgba(214, 51, 132, 0.1); }
+        
+        .btn-primary { background: linear-gradient(135deg, #D63384, #be185d); color: white; border-radius: 12px; font-weight: 600; transition: all 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(214, 51, 132, 0.5); }
+        .btn-secondary { background: white; color: #583a5e; border-radius: 12px; transition: all 0.2s; border: 1px solid #e5e7eb; }
+        .btn-secondary:hover { background: #fdf2f8; }
+
+        .cat-btn.active { background: #D63384; color: white; box-shadow: 0 4px 10px rgba(214, 51, 132, 0.3); }
+        .cat-btn { background: rgba(255,255,255,0.5); color: #583a5e; }
+
+        .modal-overlay { background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .tab-locked { opacity: 0.5; cursor: not-allowed !important; filter: grayscale(100%); }
+
+        /* FASCIA STYLES */
+        .fascia-container {
+            background: #e2e8f0; border: 1px solid #cbd5e0; position: relative;
+            width: 100%; max-width: 595px; height: auto; aspect-ratio: 595/441; margin: 0 auto; overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;
+        }
+        .fascia-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 10; }
+        .fascia-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; }
+        .fascia-text {
+            position: absolute; z-index: 50; color: #000; font-weight: 800; font-family: 'Arial', sans-serif; 
+            text-align: center; pointer-events: none; display: flex; align-items: center; justify-content: center; 
+            text-transform: uppercase; white-space: nowrap; 
+            top: 12.5%; left: 27.2%; width: 48.7%; height: 7.5%; letter-spacing: 0.5px;
+        }
+        .char-input {
+            width: 35px; height: 45px; font-size: 20px; text-align: center; text-transform: uppercase;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-weight: bold; color: #2d3748; background: #fff; transition: all 0.2s;
+        }
+        .char-input:focus { border-color: #D63384; box-shadow: 0 0 0 3px rgba(214, 51, 132, 0.2); outline: none; transform: scale(1.1); }
+
+        /* PRINT */
+        @media print {
+            body * { visibility: hidden; }
+            #invoice-print-area, #invoice-print-area * { visibility: visible; }
+            #invoice-print-area { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white; z-index: 9999; padding: 20px; }
+            .no-print { display: none !important; }
+        }
+        
+        /* Loading Overlay */
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #D63384; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 
-<body x-data="vendorApp()" x-init="initApp()" class="select-none">
+<body x-data="vendorApp()" x-init="initApp()" class="select-none font-sans text-[#583a5e] bg-[#FDF2F8]">
+
+    <div x-show="isLoading" class="fixed inset-0 z-[200] bg-white/80 backdrop-blur-sm flex items-center justify-center" x-transition>
+        <div class="loader"></div>
+    </div>
 
     <div class="fixed top-4 right-4 z-[120] flex gap-2 ios-glass p-1">
         <button @click="setLang('ms')" :class="lang==='ms' ? 'btn-primary' : 'text-[#D63384]'" class="px-3 py-1 rounded-full text-xs font-bold transition">BM</button>
         <button @click="setLang('en')" :class="lang==='en' ? 'btn-primary' : 'text-[#D63384]'" class="px-3 py-1 rounded-full text-xs font-bold transition">EN</button>
     </div>
 
-    <div x-show="!isAuthenticated" class="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md bg-white/30" x-transition>
+    <div x-show="!isAuthenticated" class="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay" x-transition>
         <div class="w-full max-w-md ios-glass overflow-hidden flex flex-col max-h-[90vh] shadow-2xl relative">
-            
-            <div class="pt-8 pb-4 text-center">
+            <div class="pt-8 pb-2 text-center">
                 <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-16 mx-auto object-contain mb-2 drop-shadow-md hover:scale-105 transition">
             </div>
-
+            
             <div class="flex text-sm font-bold uppercase tracking-wider px-6 border-b border-white/40">
                 <button @click="authMode = 'login'" :class="authMode === 'login' ? 'text-[#D63384] border-b-2 border-[#D63384]' : 'text-gray-500 hover:text-[#D63384]'" class="flex-1 py-4 transition" x-text="t('login_tab')"></button>
                 <button @click="authMode = 'signup'" :class="authMode === 'signup' ? 'text-[#D63384] border-b-2 border-[#D63384]' : 'text-gray-500 hover:text-[#D63384]'" class="flex-1 py-4 transition" x-text="t('signup_tab')"></button>
             </div>
 
             <div class="p-6 flex-1 overflow-y-auto scrollbar-hide">
+                
                 <div x-show="authMode === 'login'" class="space-y-5 pt-2">
                     <p class="text-sm text-[#583a5e]/70 text-center mb-4" x-text="t('login_desc')"></p>
-                    <input type="email" placeholder="Email" class="w-full px-4 py-3 ios-input text-sm">
-                    <input type="password" placeholder="Password" class="w-full px-4 py-3 ios-input text-sm">
-                    <button @click="login()" class="w-full btn-primary py-3.5 mt-4 shadow-lg" x-text="t('login_btn')"></button>
+                    <input type="email" x-model="authInput.email" placeholder="Email" class="w-full px-4 py-3 ios-input text-sm">
+                    <input type="password" x-model="authInput.password" placeholder="Password" class="w-full px-4 py-3 ios-input text-sm">
+                    <button @click="handleLogin()" class="w-full btn-primary py-3.5 mt-4 shadow-lg" x-text="t('login_btn')"></button>
                 </div>
 
                 <div x-show="authMode === 'signup'" class="space-y-4 pt-2">
                     <p class="text-sm text-[#583a5e]/70 text-center mb-4" x-text="t('signup_desc')"></p>
+                    
                     <div class="grid grid-cols-2 gap-3">
                         <input type="text" x-model="user.companyName" placeholder="Company Name" class="w-full px-3 py-3 ios-input text-sm">
                         <input type="text" x-model="user.brandName" placeholder="Brand Name" class="w-full px-3 py-3 ios-input text-sm">
@@ -54,14 +130,17 @@
                         <input type="text" x-model="user.picName" placeholder="PIC Name" class="w-full px-3 py-3 ios-input text-sm">
                         <input type="text" x-model="user.boothNo" placeholder="Booth No" class="w-full px-3 py-3 ios-input text-sm">
                     </div>
-                    <input type="email" x-model="user.email" placeholder="Email" class="w-full px-4 py-3 ios-input text-sm">
+                    
+                    <input type="email" x-model="authInput.email" placeholder="Email" class="w-full px-4 py-3 ios-input text-sm">
                     <div class="flex gap-2">
                         <select x-model="user.phonePrefix" class="px-2 py-3 rounded-xl bg-[#FDF2F8] text-sm text-[#583a5e] border-none"><option value="+60">+60</option><option value="+65">+65</option></select>
                         <input type="tel" x-model="user.phone" placeholder="Phone" class="flex-1 px-4 py-3 ios-input text-sm">
                     </div>
+                    <input type="password" x-model="authInput.password" placeholder="Password (Min 6 chars)" class="w-full px-4 py-3 ios-input text-sm">
+                    
                     <textarea x-model="user.address" placeholder="Address" class="w-full px-4 py-3 ios-input text-sm h-20 resize-none"></textarea>
                     
-                    <button @click="login()" class="w-full btn-primary py-3.5 mt-6 shadow-lg" x-text="t('signup_btn')"></button>
+                    <button @click="handleSignup()" class="w-full btn-primary py-3.5 mt-6 shadow-lg" x-text="t('signup_btn')"></button>
                     <div class="h-6"></div>
                 </div>
             </div>
@@ -71,32 +150,29 @@
     <div x-show="isAuthenticated" class="flex h-screen overflow-hidden p-0 md:p-4 gap-4 max-w-[1400px] mx-auto" x-cloak>
         
         <aside class="hidden md:flex flex-col w-72 ios-glass p-6 h-full">
-            <div class="flex items-center justify-center mb-8">
-                <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-12 w-auto drop-shadow-md">
-            </div>
-            
+            <div class="flex items-center justify-center mb-8"><img src="https://i.imgur.com/uikzokX.png" class="h-12 w-auto drop-shadow-md"></div>
             <nav class="flex-1 space-y-2 overflow-y-auto scrollbar-hide">
                 <template x-for="item in menuItems">
-                    <button @click="currentPage = item.id" :class="currentPage === item.id ? 'active' : ''" class="nav-pill w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all">
-                        <i :class="item.icon" class="w-5 text-center text-lg"></i> <span x-text="t(item.id)"></span>
+                    <button @click="goToTab(item.id)" :class="[currentPage === item.id ? 'active' : '', isTabLocked(item.id) ? 'tab-locked' : 'hover:bg-white/40']" class="nav-pill w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all group">
+                        <div class="flex items-center gap-4"><i :class="item.icon" class="w-6 text-center text-lg"></i> <span x-text="t(item.id)"></span></div>
+                        <i x-show="isTabLocked(item.id)" class="fa-solid fa-lock text-xs opacity-60"></i>
                     </button>
                 </template>
             </nav>
-
              <div class="mt-4 pt-4 flex items-center gap-3 border-t border-white/40">
-                <img :src="user.logo || 'https://ui-avatars.com/api/?name=V&background=F472B6&color=fff'" class="w-10 h-10 rounded-full shadow-md border-2 border-white object-cover">
+                <img :src="user.logo || 'https://ui-avatars.com/api/?name=' + (user.brandName || 'V') + '&background=F472B6&color=fff'" class="w-10 h-10 rounded-full shadow-md border-2 border-white object-cover">
                 <div class="min-w-0 text-left">
                     <p class="text-sm font-bold truncate text-[#3F2A42]" x-text="user.brandName || 'Vendor'"></p>
-                    <button @click="logout()" class="text-xs text-[#D63384] font-bold hover:underline">Log Out</button>
+                    <button @click="handleLogout()" class="text-xs text-[#D63384] font-bold hover:underline">Log Out</button>
                 </div>
             </div>
         </aside>
 
-        <main class="flex-1 h-full overflow-y-auto scrollbar-hide md:ios-glass p-4 md:p-8 rounded-[28px] relative">
+        <main class="flex-1 h-full overflow-y-auto scrollbar-hide md:ios-glass p-4 md:p-8 rounded-[28px] relative bg-white/30 md:bg-transparent">
             
             <header class="md:hidden flex justify-between items-center mb-6 sticky top-0 bg-[#F8C8DC]/90 backdrop-blur z-20 py-2">
-                <img src="https://i.imgur.com/uikzokX.png" alt="Absolut Bazaar" class="h-8 object-contain drop-shadow-sm">
-                <div class="w-9 h-9 rounded-full bg-white shadow p-0.5" @click="currentPage = 'profile'">
+                <img src="https://i.imgur.com/uikzokX.png" class="h-8 object-contain">
+                <div class="w-9 h-9 rounded-full bg-white shadow p-0.5" @click="goToTab('profile')">
                     <img :src="user.logo || 'https://ui-avatars.com/api/?name=V&background=random'" class="w-full h-full rounded-full object-cover">
                 </div>
             </header>
@@ -107,108 +183,261 @@
                     <p class="text-[#D63384]/80 font-medium"><span x-text="t('welcome')"></span> <span class="text-[#D63384] font-bold" x-text="user.brandName || 'Vendor'"></span></p>
                 </div>
                 
+                <div x-show="!profileCompleted || !rulesAccepted" class="ios-glass-card bg-gradient-to-r from-pink-100 to-white p-6 border-l-4 border-[#D63384]">
+                    <h3 class="font-bold text-[#D63384] text-lg mb-4">Setup Required</h3>
+                    <div class="flex items-center justify-between w-full max-w-2xl relative text-xs md:text-sm">
+                        <div class="absolute left-0 right-0 top-1/2 h-0.5 bg-gray-300 -z-0"></div>
+                        
+                        <div class="relative z-10 flex flex-col items-center gap-1 bg-white p-1 rounded">
+                            <div class="w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-white font-bold" :class="profileCompleted ? 'bg-green-500' : 'bg-gray-300'">
+                                <i class="fa-solid fa-check" x-show="profileCompleted"></i><span x-show="!profileCompleted">1</span>
+                            </div>
+                            <span class="font-bold text-[#583a5e]">Profile</span>
+                        </div>
+
+                        <div class="relative z-10 flex flex-col items-center gap-1 bg-white p-1 rounded">
+                            <div class="w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-white font-bold" :class="rulesAccepted ? 'bg-green-500' : 'bg-gray-300'">
+                                <i class="fa-solid fa-check" x-show="rulesAccepted"></i><span x-show="!rulesAccepted">2</span>
+                            </div>
+                            <span class="font-bold text-[#583a5e]">Rules</span>
+                        </div>
+
+                        <div class="relative z-10 flex flex-col items-center gap-1 bg-white p-1 rounded">
+                            <div class="w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-white font-bold" :class="specsAccepted ? 'bg-green-500' : 'bg-gray-300'">
+                                <i class="fa-solid fa-check" x-show="specsAccepted"></i><span x-show="!specsAccepted">3</span>
+                            </div>
+                            <span class="font-bold text-[#583a5e]">Specs</span>
+                        </div>
+                        
+                        <div class="relative z-10 flex flex-col items-center gap-1 bg-white p-1 rounded">
+                            <div class="w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-white font-bold bg-gray-300">
+                                <span>4</span>
+                            </div>
+                            <span class="font-bold text-[#583a5e]">Order</span>
+                        </div>
+                    </div>
+                    <button @click="goToNextStep()" class="mt-6 btn-primary px-6 py-2 text-xs shadow-lg">Continue Setup <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                </div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="ios-glass-card p-6 h-32 flex flex-col justify-between">
-                        <div class="flex justify-between"><p class="text-xs font-bold text-[#D63384] uppercase" x-text="t('status')"></p><i class="fa-solid fa-circle-check text-green-500 text-xl"></i></div>
-                        <h3 class="text-2xl font-bold text-[#583a5e]">Confirmed</h3>
-                    </div>
-                    <div class="ios-glass-card p-6 h-32 flex flex-col justify-between">
-                        <div class="flex justify-between"><p class="text-xs font-bold text-[#D63384] uppercase" x-text="t('deadline')"></p><i class="fa-regular fa-clock text-amber-500 text-xl"></i></div>
-                        <h3 class="text-2xl font-bold text-[#583a5e]">2 <span x-text="t('days_left')"></span></h3>
-                    </div>
-                    <div class="ios-glass-card p-6 h-32 flex flex-col justify-between">
-                        <div class="flex justify-between"><p class="text-xs font-bold text-[#D63384] uppercase" x-text="t('balance')"></p><i class="fa-solid fa-file-invoice-dollar text-blue-500 text-xl"></i></div>
-                        <h3 class="text-2xl font-bold text-[#583a5e]">RM 0.00</h3>
-                    </div>
+                    <div class="ios-glass-card p-6 h-32 flex flex-col justify-between"><div class="flex justify-between"><p class="text-xs font-bold text-[#D63384] uppercase" x-text="t('status')"></p><i class="fa-solid fa-circle-check text-green-500 text-xl"></i></div><h3 class="text-2xl font-bold text-[#583a5e]">Confirmed</h3></div>
+                    <div class="ios-glass-card p-6 h-32 flex flex-col justify-between"><div class="flex justify-between"><p class="text-xs font-bold text-[#D63384] uppercase" x-text="t('deadline')"></p><i class="fa-regular fa-clock text-amber-500 text-xl"></i></div><h3 class="text-2xl font-bold text-[#583a5e]">2 <span x-text="t('days_left')"></span></h3></div>
+                    <div class="ios-glass-card p-6 h-32 flex flex-col justify-between"><div class="flex justify-between"><p class="text-xs font-bold text-[#D63384] uppercase" x-text="t('balance')"></p><i class="fa-solid fa-file-invoice-dollar text-blue-500 text-xl"></i></div><h3 class="text-2xl font-bold text-[#583a5e]">RM 0.00</h3></div>
                 </div>
 
-                <h3 class="text-lg font-bold text-[#583a5e] mt-4">Quick Access</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                     <button @click="currentPage='marketing'" class="ios-glass-card p-4 flex flex-col items-center gap-2 hover:scale-[1.02] transition text-center">
-                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-[#D63384] shadow-inner"><i class="fa-solid fa-bullhorn"></i></div>
-                        <p class="font-bold text-xs text-[#583a5e]">Marketing Kit</p>
-                     </button>
-                     <button @click="currentPage='docs'" class="ios-glass-card p-4 flex flex-col items-center gap-2 hover:scale-[1.02] transition text-center">
-                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-[#D63384] shadow-inner"><i class="fa-solid fa-file-signature"></i></div>
-                        <p class="font-bold text-xs text-[#583a5e]">Permits</p>
-                     </button>
-                     <button @click="currentPage='rules'" class="ios-glass-card p-4 flex flex-col items-center gap-2 hover:scale-[1.02] transition text-center">
-                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-[#D63384] shadow-inner"><i class="fa-solid fa-book-open"></i></div>
-                        <p class="font-bold text-xs text-[#583a5e]">Rules</p>
-                     </button>
-                     <button @click="showEmergency=true" class="ios-glass-card p-4 flex flex-col items-center gap-2 hover:scale-[1.02] transition text-center bg-red-50 border-red-100">
-                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500 shadow-inner"><i class="fa-solid fa-phone-volume"></i></div>
-                        <p class="font-bold text-xs text-red-800">Emergency</p>
-                     </button>
+                <div class="ios-glass-card p-6">
+                    <h3 class="font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2 mb-4">Important Deadlines</h3>
+                    <div class="space-y-4">
+                        <template x-for="item in dashboardDeadlines">
+                            <div class="flex items-start gap-4">
+                                <div class="w-16 text-right pt-1"><span class="block font-bold text-[#D63384] leading-tight" x-text="item.date"></span><span class="text-[10px] text-gray-400" x-text="item.day"></span></div>
+                                <div class="w-3 h-3 rounded-full bg-[#D63384] mt-2 shadow-sm shrink-0"></div>
+                                <div class="bg-white/50 rounded-lg p-3 flex-1 border border-white"><h4 class="font-bold text-[#583a5e] text-sm" x-text="item.title"></h4><p class="text-xs text-gray-500" x-text="item.desc"></p></div>
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
 
-            <div x-show="currentPage === 'order'" class="space-y-6 fade-enter-active">
-                <h1 class="text-2xl font-bold text-[#583a5e]" x-text="t('order')"></h1>
-                <div class="flex overflow-x-auto gap-3 pb-2 scrollbar-hide">
-                    <template x-for="cat in ['furniture', 'electrical', 'pass', 'parking']">
-                        <button @click="activeCategory = cat" :class="activeCategory === cat ? 'active' : ''" class="cat-btn px-5 py-2.5 rounded-full text-xs uppercase font-bold tracking-wide transition-all flex-shrink-0">
-                            <span x-text="t(cat)"></span>
-                        </button>
-                    </template>
+            <div x-show="currentPage === 'profile'" class="space-y-6 max-w-3xl fade-enter-active">
+                <header class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <h1 class="text-2xl font-bold text-[#583a5e]" x-text="t('profile')"></h1>
+                    <button @click="saveProfile()" class="btn-primary px-5 py-2 text-xs hover:scale-105 transition shadow-lg flex items-center justify-center gap-2">
+                        <span>Save Profile & Fascia</span> <i class="fa-solid fa-floppy-disk"></i>
+                    </button>
+                </header>
+                
+                <div class="ios-glass-card p-6 space-y-4">
+                    <h3 class="text-sm font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2">Business Information</h3>
+                    <div class="flex items-center gap-6 mb-4">
+                        <div class="relative group w-20 h-20 flex-shrink-0">
+                            <img :src="user.logo || 'https://ui-avatars.com/api/?name=' + (user.brandName || 'V') + '&background=random'" class="w-full h-full rounded-full object-cover border-2 border-white shadow-md">
+                            <label class="absolute bottom-0 right-0 bg-[#D63384] text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#b02a6b] transition shadow-md border border-white"><i class="fa-solid fa-camera text-[10px]"></i><input type="file" @change="handleLogoUpload" class="hidden" accept="image/*"></label>
+                        </div>
+                        <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label class="text-[10px] text-[#583a5e]/60 font-bold uppercase ml-1">Brand Name *</label><input type="text" x-model="user.brandName" class="w-full px-3 py-2 ios-input text-sm"></div>
+                            <div><label class="text-[10px] text-[#583a5e]/60 font-bold uppercase ml-1">Company Name</label><input type="text" x-model="user.companyName" class="w-full px-3 py-2 ios-input text-sm"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="text-[10px] text-[#583a5e]/60 font-bold uppercase ml-1">PIC Name</label><input type="text" x-model="user.picName" class="w-full px-3 py-2 ios-input text-sm"></div>
+                        <div><label class="text-[10px] text-[#583a5e]/60 font-bold uppercase ml-1">Booth No</label><input type="text" x-model="user.boothNo" class="w-full px-3 py-2 ios-input text-sm"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="text-[10px] text-[#583a5e]/60 font-bold uppercase ml-1">Phone Contact</label><div class="flex gap-2"><input type="text" x-model="user.phonePrefix" class="w-16 px-2 py-2 ios-input text-sm text-center" readonly><input type="tel" x-model="user.phone" placeholder="12345678" class="flex-1 px-3 py-2 ios-input text-sm"></div></div>
+                        <div><label class="text-[10px] text-[#583a5e]/60 font-bold uppercase ml-1">Email</label><input type="email" x-model="user.email" class="w-full px-3 py-2 ios-input text-sm" readonly></div>
+                    </div>
+                    <div><label class="text-[10px] text-[#583a5e]/60 font-bold uppercase ml-1">Address</label><textarea x-model="user.address" class="w-full px-3 py-2 ios-input text-sm h-20 resize-none"></textarea></div>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <template x-for="p in products.filter(x => x.category === activeCategory)" :key="p.id">
-                        <div class="ios-glass-card p-3 flex flex-col h-full">
-                            <div class="aspect-square rounded-2xl bg-white mb-3 overflow-hidden relative shadow-inner p-2">
-                                <img :src="p.img" class="w-full h-full object-contain mix-blend-multiply">
-                                <div class="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[10px] font-bold text-[#D63384] shadow-sm">RM <span x-text="p.price"></span></div>
-                            </div>
-                            <h4 class="font-bold text-sm text-[#583a5e] mb-1 leading-tight" x-text="t_prod(p)"></h4>
-                            <div class="mt-auto pt-2 flex items-center justify-between">
-                                <button @click="addToCart(p.id, -1)" class="w-8 h-8 rounded-full bg-white shadow text-[#D63384] hover:scale-90 transition">-</button>
-                                <span class="text-sm font-bold text-[#583a5e]" x-text="cart[p.id] || 0"></span>
-                                <button @click="addToCart(p.id, 1)" class="w-8 h-8 rounded-full bg-[#D63384] shadow text-white hover:scale-110 transition">+</button>
+
+                <div class="ios-glass-card p-6 space-y-4">
+                    <h3 class="text-sm font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2">Social Media</h3>
+                    <div class="relative"><i class="fa-brands fa-instagram absolute left-3 top-2.5 text-[#D63384]"></i><input type="url" x-model="user.socials.instagram" placeholder="Instagram URL" class="w-full pl-10 pr-4 py-2 ios-input text-sm"></div>
+                    <div class="relative"><i class="fa-brands fa-tiktok absolute left-3 top-2.5 text-[#D63384]"></i><input type="url" x-model="user.socials.tiktok" placeholder="TikTok URL" class="w-full pl-10 pr-4 py-2 ios-input text-sm"></div>
+                    <div class="relative"><i class="fa-brands fa-facebook absolute left-3 top-2.5 text-[#D63384]"></i><input type="url" x-model="user.socials.facebook" placeholder="Facebook URL" class="w-full pl-10 pr-4 py-2 ios-input text-sm"></div>
+                </div>
+
+                <div class="ios-glass-card p-6 bg-gradient-to-br from-white to-gray-50 border border-gray-200">
+                    <h3 class="text-sm font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2 mb-4">Fascia Board Name</h3>
+                    <p class="text-red-500 font-bold text-xs mb-4 text-center animate-pulse"><i class="fa-solid fa-triangle-exclamation mr-1"></i> NAME TO BE PRINTED ON FASCIA BOARD (No changes of name after submission)</p>
+                    <div class="flex flex-col items-center">
+                        <div class="w-full overflow-x-auto pb-4 flex justify-center">
+                            <div class="fascia-container flex-shrink-0">
+                                <img src="https://i.imgur.com/MlQ8ZYD.jpeg" class="fascia-bg">
+                                <svg class="fascia-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 595.28 440.75"><rect fill="#fff" opacity="0.9" x="162.29" y="55.15" width="290.29" height="33.02"/></svg>
+                                <div class="fascia-text" :style="'font-size: ' + (getFasciaString().length > 20 ? '14px' : (getFasciaString().length > 15 ? '16px' : '18px'))" x-text="getFasciaString()"></div>
                             </div>
                         </div>
-                    </template>
+                        <div class="w-full text-center">
+                            <label class="block text-xs font-bold text-[#583a5e] mb-2">Enter Characters (Max 25)</label>
+                            <div class="flex flex-wrap justify-center gap-1 mb-2">
+                                <template x-for="(char, index) in fasciaInput" :key="index">
+                                    <input type="text" x-model="fasciaInput[index]" maxlength="1" class="char-input ios-input" @input="handleFasciaInput($event, index)" @keydown.backspace="handleFasciaBackspace($event, index)" :id="'char-' + index" :disabled="fasciaSaved">
+                                </template>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div x-show="currentPage === 'rules'" class="space-y-6 fade-enter-active">
-                 <h1 class="text-2xl font-bold text-[#583a5e]" x-text="t('rules')"></h1>
+            <div x-show="currentPage === 'rules'" class="space-y-6 fade-enter-active pb-32">
+                 <h1 class="text-2xl font-bold text-[#583a5e]">Rules & Documents</h1>
+                 <div x-show="rulesAccepted" class="bg-green-100 text-green-800 p-4 rounded-xl flex items-center gap-3 border border-green-200 shadow-sm animate-pulse-once">
+                    <i class="fa-solid fa-circle-check text-xl"></i>
+                    <div><p class="font-bold text-sm">Agreed & Accepted</p><p class="text-xs">You have accepted the terms on <span x-text="new Date().toLocaleDateString()"></span></p></div>
+                 </div>
+
+                 <h3 class="text-sm font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2 mt-4">Required Documents</h3>
+                 <div class="ios-glass-card p-4 flex justify-between items-center">
+                    <div><h4 class="font-bold text-[#583a5e] text-sm">Indemnity Form</h4><span class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">Required to Proceed</span></div>
+                    <button class="text-[#D63384] text-xs font-bold border border-[#D63384] px-3 py-1 rounded-full hover:bg-[#D63384] hover:text-white transition">Download & Upload</button>
+                 </div>
+
+                 <h3 class="text-sm font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2 mt-8">Rules & Regulations</h3>
                  <div class="grid gap-4">
-                     <div class="ios-glass-card p-5">
-                        <div class="flex items-center gap-3 mb-2"><i class="fa-solid fa-helmet-safety text-[#D63384]"></i><h3 class="font-bold text-[#D63384]">Construction</h3></div>
-                        <p class="text-sm text-[#583a5e]/80">Maximum height 2.5m. Safety vests compulsory during setup.</p>
-                     </div>
-                     <div class="ios-glass-card p-5">
-                        <div class="flex items-center gap-3 mb-2"><i class="fa-solid fa-bolt text-[#D63384]"></i><h3 class="font-bold text-[#D63384]">Electrical</h3></div>
-                        <p class="text-sm text-[#583a5e]/80">No multi-plugs. Only SIRIM certified items.</p>
-                     </div>
+                     <div class="ios-glass-card p-5"><div class="flex items-center gap-3 mb-2"><i class="fa-solid fa-helmet-safety text-[#D63384]"></i><h3 class="font-bold text-[#D63384]">Construction</h3></div><p class="text-sm text-[#583a5e]/80">Maximum height 2.5m. Safety vests compulsory during setup.</p></div>
+                     <div class="ios-glass-card p-5"><div class="flex items-center gap-3 mb-2"><i class="fa-solid fa-bolt text-[#D63384]"></i><h3 class="font-bold text-[#D63384]">Electrical</h3></div><p class="text-sm text-[#583a5e]/80">No multi-plugs. Only SIRIM certified items.</p></div>
+                 </div>
+
+                 <div x-show="!rulesAccepted" class="fixed bottom-20 left-4 right-4 md:absolute md:bottom-8 md:left-8 md:right-8 ios-glass p-4 rounded-2xl border-t border-white/50 flex flex-col md:flex-row items-center justify-between gap-4 animate-bounce-in z-30 shadow-2xl bg-white/90 backdrop-blur-md">
+                    <div class="flex items-center gap-3 w-full md:w-auto"><input type="checkbox" id="agreeCheck" class="w-5 h-5 accent-[#D63384] rounded focus:ring-0 cursor-pointer"><label for="agreeCheck" class="text-sm font-bold text-[#583a5e] cursor-pointer select-none">I understand the rules and have uploaded the required docs.</label></div>
+                    <button @click="if(document.getElementById('agreeCheck').checked) { agreeRules() } else { alert('Please tick the box to proceed.'); }" class="btn-primary w-full md:w-auto px-8 py-3 shadow-lg font-bold">I Understand & Proceed</button>
                  </div>
             </div>
 
-            <div x-show="currentPage === 'logistics'" class="space-y-6 max-w-3xl fade-enter-active">
-                <h1 class="text-2xl font-bold text-[#583a5e]" x-text="t('logistics')"></h1>
-                <div class="ios-glass-card overflow-hidden">
-                    <div class="h-32 bg-gray-200 relative">
-                        <img src="https://placehold.co/800x400/D63384/FFE4E1?text=MITEC+KL+Map" class="w-full h-full object-cover opacity-80 mix-blend-multiply">
-                        <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#583a5e]/80 to-transparent">
-                            <h3 class="font-bold text-white text-lg">MITEC, Kuala Lumpur</h3>
-                            <p class="text-xs text-white/80"><i class="fa-solid fa-location-dot mr-1"></i> Hall 2, Booth A-12</p>
-                        </div>
-                    </div>
-                    <div class="p-4 flex gap-3">
-                        <button class="flex-1 btn-secondary py-2 text-xs font-bold flex items-center justify-center gap-2"><i class="fa-brands fa-waze"></i> Waze</button>
-                        <button class="flex-1 btn-secondary py-2 text-xs font-bold flex items-center justify-center gap-2"><i class="fa-brands fa-google"></i> Maps</button>
-                    </div>
-                </div>
-                <div class="ios-glass-card p-6 relative pl-8 space-y-8">
-                    <div class="absolute left-6 top-6 bottom-6 w-1 bg-gradient-to-b from-pink-300 to-transparent rounded-full opacity-50"></div>
-                    <template x-for="event in logisticsTimeline">
-                        <div class="relative pl-6">
-                            <div class="absolute left-[-23px] top-1 w-4 h-4 rounded-full border-4 border-[#FFE4E1] bg-pink-300 shadow-sm"></div>
-                            <span class="text-xs font-bold text-pink-400 mb-1 block" x-text="event.time"></span>
-                            <h4 class="text-[#583a5e] font-bold text-lg" x-text="event.title"></h4>
-                            <p class="text-sm text-[#583a5e]/70" x-text="event.desc"></p>
+            <div x-show="currentPage === 'specs'" class="space-y-6 fade-enter-active">
+                <h1 class="text-2xl font-bold text-[#583a5e]">Booth Specifications</h1>
+                <p class="text-sm text-gray-500 mb-4">Click on image to view details.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <template x-for="spec in boothSpecs">
+                        <div class="ios-glass-card p-4 group cursor-pointer hover:scale-105 transition shadow-md" @click="activeSpecImage = spec.img">
+                            <div class="aspect-video rounded-xl overflow-hidden mb-3 relative bg-gray-200">
+                                <img :src="spec.img" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition backdrop-blur-[2px]"><i class="fa-solid fa-magnifying-glass-plus text-white text-3xl drop-shadow-md"></i></div>
+                            </div>
+                            <h3 class="font-bold text-[#583a5e]" x-text="spec.title"></h3>
+                            <p class="text-xs text-gray-500" x-text="spec.desc"></p>
                         </div>
                     </template>
+                </div>
+            </div>
+
+            <div x-show="currentPage === 'logistics'" class="space-y-6 max-w-5xl fade-enter-active">
+                <h1 class="text-2xl font-bold text-[#583a5e]" x-text="t('logistics')"></h1>
+                
+                <div class="ios-glass-card overflow-hidden">
+                    <div class="h-48 bg-gray-200 relative">
+                        <img src="https://imgur.com/418bdeae-6130-4a76-855b-ae269bd7ab84.jpeg" class="w-full h-full object-cover opacity-90">
+                        <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#583a5e] to-transparent">
+                            <h3 class="font-bold text-white text-2xl">Singapore Expo</h3>
+                            <p class="text-sm text-white/90 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> 1 Expo Dr, Singapore 486150</p>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+                        <div class="text-sm text-[#583a5e]">
+                            <p><i class="fa-solid fa-phone mr-2"></i> +65 6403 2160</p>
+                            <p><i class="fa-regular fa-clock mr-2"></i> 10 AM - 10 PM</p>
+                        </div>
+                        <div class="flex gap-3 w-full md:w-auto">
+                            <button class="flex-1 md:w-32 btn-secondary py-2 text-xs font-bold flex items-center justify-center gap-2"><i class="fa-brands fa-waze"></i> Waze</button>
+                            <button class="flex-1 md:w-32 btn-secondary py-2 text-xs font-bold flex items-center justify-center gap-2"><i class="fa-brands fa-google"></i> Maps</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="ios-glass-card p-6 pl-8">
+                        <h3 class="text-sm font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2 mb-6">Event Flow</h3>
+                        <div class="relative border-l-2 border-pink-200 ml-2 space-y-8 pb-2">
+                            <template x-for="event in logisticsTimeline">
+                                <div class="relative pl-6">
+                                    <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-[#D63384] border-2 border-white shadow-sm"></div>
+                                    <span class="text-xs font-bold text-pink-500 mb-1 block" x-text="event.time"></span>
+                                    <h4 class="text-[#583a5e] font-bold text-lg" x-text="event.title"></h4>
+                                    <p class="text-sm text-[#583a5e]/70" x-text="event.desc"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="ios-glass-card p-6">
+                        <h3 class="text-sm font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2 mb-6">Official Logistics Partners</h3>
+                        <div class="space-y-4">
+                            <div class="bg-white/50 p-4 rounded-xl border border-white flex items-start gap-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl"><i class="fa-solid fa-truck-fast"></i></div>
+                                <div><h4 class="font-bold text-[#583a5e]">Global Move Sdn Bhd</h4><p class="text-xs text-gray-500 mb-2">Official freight forwarder.</p><div class="flex gap-2"><a href="#" class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded font-bold hover:bg-green-200">Contact</a></div></div>
+                            </div>
+                            <div class="bg-white/50 p-4 rounded-xl border border-white flex items-start gap-4">
+                                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 text-xl"><i class="fa-solid fa-box-open"></i></div>
+                                <div><h4 class="font-bold text-[#583a5e]">Expo Storage Solutions</h4><p class="text-xs text-gray-500 mb-2">On-site storage services.</p><div class="flex gap-2"><a href="#" class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded font-bold hover:bg-green-200">Contact</a></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="currentPage === 'order'" class="h-full flex flex-col fade-enter-active">
+                <h1 class="text-2xl font-bold text-[#583a5e] mb-4" x-text="t('order')"></h1>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full overflow-hidden">
+                    <div class="lg:col-span-2 overflow-y-auto scrollbar-hide pb-20">
+                        <div class="flex overflow-x-auto gap-3 pb-2 scrollbar-hide mb-4 sticky top-0 bg-[#FDF2F8]/90 z-10 py-2">
+                            <template x-for="cat in ['furniture', 'electrical', 'pass', 'parking']">
+                                <button @click="activeCategory = cat" :class="activeCategory === cat ? 'active' : ''" class="cat-btn px-5 py-2.5 rounded-full text-xs uppercase font-bold tracking-wide transition-all flex-shrink-0"><span x-text="t(cat)"></span></button>
+                            </template>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <template x-for="p in products.filter(x => x.category === activeCategory)" :key="p.id">
+                                <div class="ios-glass-card p-3 flex flex-col h-full">
+                                    <div class="aspect-square rounded-2xl bg-white mb-3 overflow-hidden relative shadow-inner p-2">
+                                        <img :src="p.img" class="w-full h-full object-contain mix-blend-multiply">
+                                        <div class="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[10px] font-bold text-[#D63384] shadow-sm">RM <span x-text="p.price"></span></div>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-[#583a5e] mb-1 leading-tight" x-text="t_prod(p)"></h4>
+                                    <div class="mt-auto pt-2 flex items-center justify-between">
+                                        <button @click="addToCart(p.id, -1)" class="w-8 h-8 rounded-full bg-white shadow text-[#D63384] hover:scale-90 transition">-</button>
+                                        <span class="text-sm font-bold text-[#583a5e]" x-text="cart[p.id] || 0"></span>
+                                        <button @click="addToCart(p.id, 1)" class="w-8 h-8 rounded-full bg-[#D63384] shadow text-white hover:scale-110 transition">+</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-1 flex flex-col gap-4 overflow-y-auto scrollbar-hide pb-20">
+                        <div x-show="getCartTotal() > 0" class="ios-glass-card p-6 border-l-4 border-[#D63384] animate-bounce-in">
+                            <h3 class="text-lg font-bold text-[#583a5e] mb-2">Current Draft</h3>
+                            <p class="text-sm text-gray-500 mb-4">Total items: <span x-text="Object.values(cart).reduce((a,b)=>a+b,0)"></span></p>
+                            <div class="flex justify-between items-end mb-4"><div><p class="text-xs uppercase font-bold text-gray-400">Total Amount</p><p class="text-2xl font-bold text-[#D63384]">RM <span x-text="getCartTotal()"></span></p></div></div>
+                            <button @click="initiatePayment()" class="w-full btn-primary py-3 text-sm shadow-lg font-bold">Checkout & Pay</button>
+                        </div>
+                        <h3 class="text-sm font-bold text-[#583a5e] uppercase mt-2">Order History</h3>
+                        <template x-for="order in orders" :key="order.ref">
+                            <div class="ios-glass-card p-4 flex flex-col gap-3">
+                                <div class="flex justify-between items-start"><div><p class="text-sm font-bold text-[#583a5e]" x-text="order.ref"></p><p class="text-[10px] text-gray-500" x-text="order.date"></p></div><span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase" x-text="order.status"></span></div>
+                                <div class="flex justify-between items-center border-b border-gray-100 pb-2"><span class="text-xs text-gray-500">Amount</span><span class="font-bold text-[#D63384]">RM <span x-text="order.amount"></span></span></div>
+                                <div class="grid grid-cols-2 gap-2"><button @click="viewProforma(order)" class="btn-secondary py-2 text-[10px] font-bold flex items-center justify-center gap-1"><i class="fa-solid fa-file-invoice"></i> Proforma</button><button @click="viewReceipt(order)" class="btn-secondary py-2 text-[10px] font-bold flex items-center justify-center gap-1 text-blue-600"><i class="fa-solid fa-receipt"></i> Receipt</button></div>
+                            </div>
+                        </template>
+                        <div x-show="orders.length === 0 && getCartTotal() == 0" class="text-center py-10 text-gray-400 text-sm">No orders yet.</div>
+                    </div>
                 </div>
             </div>
 
@@ -217,179 +446,322 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="ios-glass-card p-4 flex items-center gap-4">
                         <div class="w-16 h-16 bg-white rounded-lg p-2 shadow-sm"><img src="https://i.imgur.com/uikzokX.png" class="w-full h-full object-contain"></div>
-                        <div class="flex-1"><h4 class="font-bold text-[#583a5e]">Logo</h4><p class="text-[10px] text-[#583a5e]/60">PNG</p></div>
+                        <div class="flex-1"><h4 class="font-bold text-[#583a5e]">Official Logo</h4><p class="text-[10px] text-[#583a5e]/60">PNG / Transparent</p></div>
                         <button class="btn-primary px-4 py-2 text-xs"><i class="fa-solid fa-download"></i></button>
                     </div>
                 </div>
             </div>
 
-            <div x-show="currentPage === 'docs'" class="space-y-6 fade-enter-active">
-                <h1 class="text-2xl font-bold text-[#583a5e]" x-text="t('docs')"></h1>
-                <div class="ios-glass-card p-4 flex justify-between items-center">
-                    <div><h4 class="font-bold text-[#583a5e] text-sm">Indemnity Form</h4><span class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">Required</span></div>
-                    <button class="text-[#D63384] text-xs font-bold border border-[#D63384] px-3 py-1 rounded-full hover:bg-[#D63384] hover:text-white transition">Upload</button>
-                </div>
-            </div>
-
-            <div x-show="currentPage === 'profile'" class="space-y-6 max-w-2xl fade-enter-active">
-                <header class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-[#583a5e]" x-text="t('profile')"></h1>
-                    <button class="btn-primary px-5 py-2 text-xs hover:scale-105 transition shadow-lg">Save Changes</button>
-                </header>
-                <div class="ios-glass-card p-6 flex items-center gap-6">
-                    <div class="relative group">
-                        <img :src="user.logo || 'https://ui-avatars.com/api/?name=' + (user.brandName || 'V') + '&background=random'" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md">
-                        <label class="absolute bottom-0 right-0 bg-[#D63384] text-white w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#b02a6b] transition shadow-md border border-white">
-                            <i class="fa-solid fa-camera text-xs"></i>
-                            <input type="file" @change="handleLogoUpload" class="hidden" accept="image/*">
-                        </label>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-[#583a5e]" x-text="user.brandName || 'Brand Name'"></h2>
-                        <p class="text-[#D63384] text-sm font-medium" x-text="user.companyName || 'Company Name'"></p>
-                    </div>
-                </div>
-                <div class="space-y-4">
-                    <div class="ios-glass-card p-6 space-y-4">
-                        <h3 class="text-xs font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2">Business Details</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="text" x-model="user.brandName" placeholder="Brand Name" class="w-full px-3 py-2 ios-input text-sm">
-                            <input type="text" x-model="user.companyName" placeholder="Company Name" class="w-full px-3 py-2 ios-input text-sm">
-                        </div>
-                         <div class="grid grid-cols-2 gap-4">
-                            <input type="text" x-model="user.picName" placeholder="PIC Name" class="w-full px-3 py-2 ios-input text-sm">
-                            <input type="text" x-model="user.boothNo" placeholder="Booth No" class="w-full px-3 py-2 ios-input text-sm">
-                        </div>
-                        <input type="email" x-model="user.email" placeholder="Email" class="w-full px-3 py-2 ios-input text-sm">
-                        <div class="flex gap-2">
-                            <input type="text" x-model="user.phonePrefix" class="w-20 px-3 py-2 ios-input text-sm text-center" readonly>
-                            <input type="tel" x-model="user.phone" placeholder="Phone" class="flex-1 px-3 py-2 ios-input text-sm">
-                        </div>
-                        <textarea x-model="user.address" class="w-full px-3 py-2 ios-input text-sm h-16 resize-none" placeholder="Address"></textarea>
-                    </div>
-
-                    <div class="ios-glass-card p-6 space-y-4">
-                        <h3 class="text-xs font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2">Social Media</h3>
-                        <div class="relative"><i class="fa-brands fa-instagram absolute left-3 top-2.5 text-[#D63384]"></i><input type="url" x-model="user.socials.instagram" placeholder="https://instagram.com/..." class="w-full pl-10 pr-4 py-2 ios-input text-sm"></div>
-                        <div class="relative"><i class="fa-brands fa-tiktok absolute left-3 top-2.5 text-[#D63384]"></i><input type="url" x-model="user.socials.tiktok" placeholder="https://tiktok.com/@..." class="w-full pl-10 pr-4 py-2 ios-input text-sm"></div>
-                        <div class="relative"><i class="fa-brands fa-facebook absolute left-3 top-2.5 text-[#D63384]"></i><input type="url" x-model="user.socials.facebook" placeholder="https://facebook.com/..." class="w-full pl-10 pr-4 py-2 ios-input text-sm"></div>
-                    </div>
-                </div>
-            </div>
-
         </main>
-        
-        <div x-show="getCartTotal() > 0" class="fixed bottom-24 left-4 right-4 md:absolute md:bottom-8 md:left-auto md:right-8 md:w-80 ios-glass p-2 pl-6 flex items-center justify-between z-40 animate-bounce-in" style="background: rgba(255,255,255,0.9);">
-            <div><p class="text-[10px] text-[#583a5e] uppercase font-bold" x-text="t('cart_total')"></p><p class="text-lg font-bold text-[#D63384]">RM <span x-text="getCartTotal()"></span></p></div>
-            <button class="btn-primary px-6 py-2 text-sm shadow-lg" x-text="t('submit_order')"></button>
-        </div>
-
     </div>
 
     <nav class="md:hidden fixed bottom-4 left-4 right-4 ios-glass flex justify-between px-6 py-3 z-50 shadow-2xl" x-show="isAuthenticated">
         <template x-for="item in menuItems.slice(0,4)">
-            <button @click="currentPage = item.id" :class="currentPage === item.id ? 'text-[#D63384] scale-110' : 'text-[#583a5e]/60'"><i :class="item.icon" class="text-xl"></i></button>
+            <button @click="goToTab(item.id)" :class="[currentPage === item.id ? 'text-[#D63384] scale-110' : 'text-[#583a5e]/60', isTabLocked(item.id) ? 'opacity-40' : '']" class="relative transition-all">
+                <i :class="item.icon" class="text-xl"></i><i x-show="isTabLocked(item.id)" class="fa-solid fa-lock absolute -top-1 -right-2 text-[8px] bg-gray-200 rounded-full p-0.5"></i>
+            </button>
         </template>
-        <button @click="currentPage='profile'" :class="currentPage === 'profile' ? 'text-[#D63384] scale-110' : 'text-[#583a5e]/60'"><i class="fa-solid fa-user text-xl"></i></button>
+        <button @click="goToTab('profile')" :class="currentPage === 'profile' ? 'text-[#D63384] scale-110' : 'text-[#583a5e]/60'"><i class="fa-solid fa-user text-xl"></i></button>
     </nav>
 
-    <div x-show="showEmergency" class="fixed inset-0 z-[110] flex items-center justify-center p-4 backdrop-blur-sm bg-black/20" style="display: none;">
-        <div class="ios-glass-card p-6 w-full max-w-sm text-center space-y-4 shadow-2xl relative" @click.outside="showEmergency=false">
-            <h3 class="text-xl font-bold text-red-600">Emergency Contacts</h3>
-            <div class="grid grid-cols-2 gap-3">
-                <a href="tel:999" class="bg-red-100 text-red-600 py-3 rounded-xl font-bold flex flex-col items-center gap-1 hover:bg-red-200"><i class="fa-solid fa-shield-halved text-xl"></i> Security</a>
-                <a href="tel:999" class="bg-red-100 text-red-600 py-3 rounded-xl font-bold flex flex-col items-center gap-1 hover:bg-red-200"><i class="fa-solid fa-user-doctor text-xl"></i> Medic</a>
+    <div x-show="showPaymentModal" class="fixed inset-0 z-[130] flex items-center justify-center p-4 modal-overlay" style="display: none;" x-transition>
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+            <div class="bg-gray-50 p-6 border-b">
+                <h3 class="font-bold text-lg text-[#583a5e]">Complete Payment</h3>
+                <p class="text-sm text-gray-500">Order Ref: <span class="font-bold" x-text="currentOrderRef"></span></p>
             </div>
-            <button @click="showEmergency=false" class="text-sm text-gray-500 underline">Close</button>
+            <div class="p-6 space-y-4">
+                <div class="bg-blue-50 p-4 rounded-xl text-sm border border-blue-100">
+                    <p class="font-bold text-blue-800">Total: RM <span x-text="getCartTotal()"></span></p>
+                    <p class="mt-2 text-blue-900">Bank: Maybank</p>
+                    <p class="text-blue-900">Acc: 5512-3456-7890 (Absolut Event)</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-[#583a5e] mb-2">Upload Receipt *</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 relative">
+                         <input type="file" @change="handleReceiptUpload" class="absolute inset-0 opacity-0 cursor-pointer">
+                         <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                         <p class="text-xs text-gray-500" x-text="receiptFile ? receiptFile.name : 'Tap to upload'"></p>
+                    </div>
+                </div>
+                <button @click="submitOrder()" class="w-full btn-primary py-3 font-bold shadow-lg">Submit Order</button>
+                <button @click="showPaymentModal=false" class="w-full text-sm text-gray-400 hover:text-gray-600">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="activeSpecImage" class="fixed inset-0 z-[150] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm" @click="activeSpecImage = null" x-transition.opacity>
+        <div class="relative max-w-5xl max-h-screen">
+            <img :src="activeSpecImage" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl animate-bounce-in border-4 border-white">
+            <button class="absolute -top-10 right-0 text-white text-3xl hover:scale-110 transition"><i class="fa-solid fa-xmark"></i></button>
         </div>
     </div>
 
     <script>
+        // GANTI DENGAN URL WORKER ANDA
+        const WORKER_URL = 'https://vendor-backend.nama-anda.workers.dev'; 
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('vendorApp', () => ({
-                lang: 'en',
-                authMode: 'login',
-                isAuthenticated: localStorage.getItem('isAuth') === 'true',
-                currentPage: 'dashboard',
-                showEmergency: false,
-                activeCategory: 'furniture',
+                // --- STATE ---
+                lang: 'en', authMode: 'login', isAuthenticated: false, isLoading: false, currentPage: 'dashboard', showEmergency: false, activeCategory: 'furniture',
+                authInput: { email: '', password: '' },
                 
-                menuItems: [
-                    { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-house' },
-                    { id: 'order', label: 'Order', icon: 'fa-solid fa-bag-shopping' },
-                    { id: 'marketing', label: 'Marketing', icon: 'fa-solid fa-bullhorn' },
-                    { id: 'docs', label: 'Docs', icon: 'fa-solid fa-file-signature' },
-                    { id: 'logistics', label: 'Logistics', icon: 'fa-solid fa-truck-fast' },
+                profileCompleted: false, rulesAccepted: false, fasciaSaved: false, // Trackers
+                
+                fasciaInput: Array(25).fill(''),
+                orders: [], cart: {},
+                
+                boothSpecs: [
+                    { title: 'F&B Indoor Booth', img: 'https://i.imgur.com/hppoZFx.jpeg', desc: 'Standard setup for indoor food vendors.' },
+                    { title: 'Retail Booth', img: 'https://i.imgur.com/Hvk4s0D.jpeg', desc: 'Ideal for fashion and merchandise.' },
+                    { title: 'Outdoor F&B Canopy', img: 'https://i.imgur.com/dfji219.jpeg', desc: 'Heavy duty canopy for outdoor zones.' }
+                ],
+                activeSpecImage: null,
+
+                dashboardDeadlines: [
+                    { date: '10 Feb', day: 'Tuesday', title: 'Booth Booking Payment', desc: 'Full settlement required.' },
+                    { date: '25 Feb', day: 'Wednesday', title: 'Additional Orders', desc: 'Furniture & Power deadline.' },
+                    { date: '01 Mar', day: 'Sunday', title: 'SFA Cert Submission', desc: 'Food handling certificate.' }
                 ],
 
-                user: { 
-                    companyName: '', brandName: '', picName: '', 
-                    phonePrefix: '+60', phone: '', email: '', 
-                    address: '', boothNo: '', logo: null,
-                    socials: { instagram: '', tiktok: '', facebook: '' }
-                },
+                showPaymentModal: false, currentOrderRef: '', receiptFile: null,
 
-                // DUAL LANGUAGE DATA (ADA BALIK!)
+                menuItems: [
+                    { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-house' },
+                    { id: 'profile', label: 'Profile', icon: 'fa-solid fa-user' }, 
+                    { id: 'rules', label: 'Rules & Docs', icon: 'fa-solid fa-book-open' }, 
+                    { id: 'specs', label: 'Booth Specs', icon: 'fa-solid fa-ruler-combined' }, 
+                    { id: 'logistics', label: 'Logistics', icon: 'fa-solid fa-truck-fast' },
+                    { id: 'order', label: 'Order', icon: 'fa-solid fa-bag-shopping' },
+                    { id: 'marketing', label: 'Marketing Kit', icon: 'fa-solid fa-bullhorn' },
+                ],
+                
+                user: { id: null, companyName: '', brandName: '', picName: '', phonePrefix: '+60', phone: '', email: '', address: '', boothNo: '', logo: null, socials: { instagram: '', tiktok: '', facebook: '' } },
+                
                 text: {
-                    en: {
-                        login_tab: 'Log In', signup_tab: 'First Time Log In', login_desc: 'Welcome back to Vendor Portal.', signup_desc: 'Register your booth details below.',
-                        login_btn: 'Log In', signup_btn: 'Confirm Registration',
-                        dashboard: 'Dashboard', rules: 'Rules', order: 'Order', logistics: 'Logistics', marketing: 'Marketing Kit', docs: 'Documents', profile: 'Profile',
-                        welcome: 'Welcome,', status: 'Booth Status', deadline: 'Submission Deadline', balance: 'Outstanding', days_left: 'Days Left',
-                        furniture: 'Furniture', electrical: 'Electrical', storage: 'Storage', pass: 'Passes', parking: 'Parking',
-                        cart_total: 'Total', submit_order: 'Checkout'
-                    },
-                    ms: {
-                        login_tab: 'Log Masuk', signup_tab: 'Daftar Kali Pertama', login_desc: 'Selamat kembali ke Portal Vendor.', signup_desc: 'Daftarkan butiran booth anda.',
-                        login_btn: 'Masuk', signup_btn: 'Sahkan Pendaftaran',
-                        dashboard: 'Utama', rules: 'Info', order: 'Tempahan', logistics: 'Logistik', marketing: 'Bahan Pemasaran', docs: 'Dokumen', profile: 'Profil',
-                        welcome: 'Selamat datang,', status: 'Status Booth', deadline: 'Tarikh Akhir', balance: 'Baki Bayaran', days_left: 'Hari Lagi',
-                        furniture: 'Perabot', electrical: 'Elektrik', storage: 'Storan', pass: 'Pas', parking: 'Parkir',
-                        cart_total: 'Jumlah', submit_order: 'Bayar'
-                    }
+                    en: { login_tab: 'Log In', signup_tab: 'First Time Log In', login_desc: 'Welcome back.', login_btn: 'Log In', signup_btn: 'Register', dashboard: 'Dashboard', rules: 'Rules & Docs', order: 'Order', logistics: 'Logistics', marketing: 'Marketing Kit', profile: 'Profile', welcome: 'Welcome,', status: 'Status', deadline: 'Deadline', balance: 'Balance', days_left: 'Days Left', furniture: 'Furniture', electrical: 'Electrical', pass: 'Passes', parking: 'Parking', cart_total: 'Total', submit_order: 'Checkout', signup_desc: 'Register booth.' },
+                    ms: { login_tab: 'Masuk', signup_tab: 'Daftar', login_desc: 'Selamat kembali.', login_btn: 'Masuk', signup_btn: 'Daftar', dashboard: 'Utama', rules: 'Info & Dokumen', order: 'Tempahan', logistics: 'Logistik', marketing: 'Kit Pemasaran', profile: 'Profil', welcome: 'Hai,', status: 'Status', deadline: 'Tarikh Akhir', balance: 'Baki', days_left: 'Hari', furniture: 'Perabot', electrical: 'Elektrik', pass: 'Pas', parking: 'Parkir', cart_total: 'Jumlah', submit_order: 'Bayar', signup_desc: 'Daftar booth.' }
                 },
-
+                
                 logisticsTimeline: [
                     { time: '12 Mac - 2PM', title: 'Booth Setup', desc: 'Vendor entry starts. Loading bay opens.' },
                     { time: '13 Mac - 10AM', title: 'Event Starts', desc: 'All booths must be ready by 9:30 AM.' },
                     { time: '15 Mac - 12AM', title: 'Teardown', desc: 'Clearance. Refundable deposit processed.' },
                 ],
-
                 products: [
                     { id: 1, category: 'furniture', name_ms: 'Meja Banquet', name_en: 'Banquet Table', price: 30, img: 'https://placehold.co/150/f472b6/fff?text=Table' },
                     { id: 2, category: 'furniture', name_ms: 'Kerusi Plastik', name_en: 'Plastic Chair', price: 5, img: 'https://placehold.co/150/f472b6/fff?text=Chair' },
                     { id: 3, category: 'electrical', name_ms: 'Plug Point 13A', name_en: 'Plug Point 13A', price: 80, img: 'https://placehold.co/150/f472b6/fff?text=Plug' },
-                    { id: 4, category: 'pass', name_ms: 'Pas Tambahan', name_en: 'Extra Pass', price: 15, img: 'https://placehold.co/150/f472b6/fff?text=Pass' }
+                    { id: 4, category: 'pass', name_ms: 'Pas Tambahan', name_en: 'Extra Pass', price: 15, img: 'https://placehold.co/150/f472b6/fff?text=Pass' },
+                    { id: 5, category: 'parking', name_ms: 'Tiket Parkir', name_en: 'Parking Ticket', price: 10, img: 'https://placehold.co/150/f472b6/fff?text=Parking' }
                 ],
-                cart: {},
-
-                t(key) { return this.text[this.lang][key] || key; },
-                t_prod(p) { return this.lang === 'ms' ? p.name_ms : p.name_en; },
-                setLang(val) { this.lang = val; },
-
-                initApp() {
+                
+                // --- INIT & AUTH ---
+                async initApp() {
+                    const session = JSON.parse(localStorage.getItem('user_session'));
+                    if (session && session.user) {
+                        this.isAuthenticated = true;
+                        this.user.email = session.user.email;
+                        this.user.id = session.user.id;
+                        await this.loadProfile(this.user.id);
+                        await this.loadOrders(this.user.id);
+                    }
                     const hash = window.location.hash.replace('#', '');
-                    if(hash && this.menuItems.some(i => i.id === hash)) this.currentPage = hash;
+                    if(hash && this.menuItems.some(i => i.id === hash)) this.goToTab(hash);
                 },
 
-                login() { 
-                    if(this.authMode==='signup' && !this.user.brandName) { alert('Sila masukkan nama brand'); return; }
-                    this.isAuthenticated = true;
-                    localStorage.setItem('isAuth', 'true');
-                    this.currentPage = 'dashboard';
+                async handleSignup() {
+                    this.isLoading = true;
+                    try {
+                        // 1. Sign Up Auth
+                        const res = await fetch(`${WORKER_URL}/auth/signup`, { method: 'POST', body: JSON.stringify(this.authInput) });
+                        const data = await res.json();
+                        if (data.error) throw new Error(data.error);
+                        
+                        // 2. Auto-Save Profile Data Immediately (Assuming trigger created row, we update it)
+                        if (data.user) {
+                            // If your worker supports /profile/save right after signup without auth header yet (might be tricky depending on RLS),
+                            // usually for email confirmation flow, you can't write to DB until confirmed/logged in.
+                            // BUT, if your Supabase allows, or if we just alert user.
+                            alert('Success! Please check your email to confirm. Your details will be saved upon login.');
+                            // Optional: Store temp data in localstorage to restore on first login
+                        }
+                    } catch (e) { alert(e.message); }
+                    this.isLoading = false;
                 },
-                logout() { 
-                    this.isAuthenticated = false; 
-                    localStorage.removeItem('isAuth');
-                    this.authMode = 'login';
-                    window.location.hash = '';
+
+                async handleLogin() {
+                    this.isLoading = true;
+                    try {
+                        const res = await fetch(`${WORKER_URL}/auth/login`, { method: 'POST', body: JSON.stringify(this.authInput) });
+                        const data = await res.json();
+                        if (data.error) throw new Error(data.error);
+                        localStorage.setItem('user_session', JSON.stringify(data.session));
+                        this.isAuthenticated = true;
+                        this.user.id = data.session.user.id;
+                        this.user.email = data.session.user.email;
+                        await this.loadProfile(this.user.id);
+                        await this.loadOrders(this.user.id);
+                        
+                        // Check if we need to auto-save profile from signup form (if implemented state transfer)
+                        // For now, we go to next step
+                        this.goToNextStep();
+                    } catch (e) { alert(e.message); }
+                    this.isLoading = false;
+                },
+
+                handleLogout() {
+                    localStorage.removeItem('user_session');
+                    this.isAuthenticated = false;
+                    window.location.reload();
+                },
+
+                // --- DATA ---
+                async loadProfile(uid) {
+                    try {
+                        const res = await fetch(`${WORKER_URL}/profile/get`, { method: 'POST', body: JSON.stringify({ user_id: uid }) });
+                        const { data } = await res.json();
+                        if (data) {
+                            this.user = { ...this.user, ...data };
+                            if (data.fascia_name) {
+                                this.fasciaSaved = true;
+                                const chars = data.fascia_name.split('');
+                                for(let i=0; i<25; i++) this.fasciaInput[i] = chars[i] || '';
+                            }
+                            this.profileCompleted = data.profile_completed || false;
+                            this.rulesAccepted = data.rules_accepted || false;
+                        }
+                    } catch (e) { console.error(e); }
+                },
+
+                async loadOrders(uid) {
+                    try {
+                        const res = await fetch(`${WORKER_URL}/order/list`, { method: 'POST', body: JSON.stringify({ user_id: uid }) });
+                        const { data } = await res.json();
+                        if (data) {
+                            this.orders = data.map(o => ({
+                                ref: o.ref_no,
+                                amount: o.amount,
+                                status: o.status,
+                                date: new Date(o.created_at).toLocaleDateString(),
+                                receiptName: 'View Receipt'
+                            }));
+                        }
+                    } catch (e) { console.error(e); }
+                },
+
+                // --- ACTIONS ---
+                t(k) { return this.text[this.lang][k] || k; }, t_prod(p) { return this.lang === 'ms' ? p.name_ms : p.name_en; }, setLang(v) { this.lang = v; },
+                
+                isTabLocked(id) { 
+                    if(id==='dashboard'||id==='profile')return false; 
+                    if(id==='rules')return !this.profileCompleted; 
+                    if(id==='specs')return !this.rulesAccepted;
+                    if(id==='logistics'||id==='order'||id==='marketing') return !this.rulesAccepted; 
+                    return false;
                 },
                 
-                handleLogoUpload(e) { const f = e.target.files[0]; if(f) this.user.logo = URL.createObjectURL(f); },
-                addToCart(id, qty) { if(!this.cart[id]) this.cart[id]=0; this.cart[id]+=qty; if(this.cart[id]<0) this.cart[id]=0; },
-                getCartTotal() { let t=0; for(let [i,q] of Object.entries(this.cart)) { const p=this.products.find(x=>x.id==i); if(p) t+=p.price*q; } return t.toFixed(2); }
+                goToTab(id) { 
+                    if(this.isTabLocked(id)){ alert('Complete previous steps.'); return; } 
+                    this.currentPage = id; window.location.hash = id;
+                },
+                
+                goToNextStep() { 
+                    if(!this.profileCompleted)this.goToTab('profile'); 
+                    else if(!this.rulesAccepted)this.goToTab('rules'); 
+                    else this.goToTab('specs'); 
+                },
+                
+                async saveProfile() { 
+                    if(!this.user.brandName){alert('Fill Brand Name');return;} 
+                    const fascia = this.getFasciaString();
+                    if(!fascia){alert('Fill Fascia Name');return;}
+                    
+                    if(confirm('Confirm Profile & Fascia Name: ' + fascia)) {
+                        this.isLoading = true;
+                        const payload = {
+                            id: this.user.id,
+                            brand_name: this.user.brandName,
+                            company_name: this.user.companyName,
+                            pic_name: this.user.picName,
+                            phone: this.user.phone,
+                            address: this.user.address,
+                            booth_no: this.user.boothNo,
+                            fascia_name: fascia,
+                            socials: this.user.socials,
+                            logo_url: this.user.logo,
+                            profile_completed: true,
+                            fascia_saved: true
+                        };
+                        try {
+                            const res = await fetch(`${WORKER_URL}/profile/save`, { method: 'POST', body: JSON.stringify(payload) });
+                            const data = await res.json();
+                            if(data.error) throw new Error(data.error);
+                            this.profileCompleted=true; this.fasciaSaved=true;
+                            alert('Saved!'); this.goToTab('rules');
+                        } catch (e) { alert(e.message); }
+                        this.isLoading = false;
+                    }
+                },
+
+                handleLogoUpload(e) { 
+                    // In real implementation, convert file to Base64 and send to worker to upload to Supabase Storage
+                    // For now, we simulate a successful local preview
+                    const f=e.target.files[0]; if(f) this.user.logo=URL.createObjectURL(f); 
+                },
+
+                handleFasciaInput(e, index) { this.fasciaInput[index] = e.target.value.toUpperCase(); if(e.target.value.length===1 && index<24) setTimeout(() => { document.getElementById('char-'+(index+1)).focus(); }, 10); },
+                handleFasciaBackspace(e, index) { if(e.target.value==='' && index>0) document.getElementById('char-'+(index-1)).focus(); },
+                getFasciaString() { return this.fasciaInput.join('').trim(); },
+                
+                async agreeRules() { 
+                    this.rulesAccepted=true; 
+                    // In real app, update DB here too
+                    this.goToTab('specs'); 
+                },
+                
+                acceptSpecs() { this.goToTab('logistics'); },
+
+                addToCart(id, qty) { if(!this.cart[id])this.cart[id]=0; this.cart[id]+=qty; if(this.cart[id]<0)this.cart[id]=0; },
+                getCartTotal() { let t=0; for(let [i,q] of Object.entries(this.cart)){ const p=this.products.find(x=>x.id==i); if(p)t+=p.price*q; } return t.toFixed(2); },
+                
+                initiatePayment() {
+                    this.currentOrderRef = 'INV-' + Math.floor(Math.random()*900000);
+                    this.receiptFile = null;
+                    this.showPaymentModal = true;
+                },
+                handleReceiptUpload(e) { this.receiptFile = e.target.files[0]; },
+                
+                async submitOrder() {
+                    if(!this.receiptFile) { alert('Receipt is required!'); return; }
+                    this.isLoading = true;
+                    // Upload logic via Worker/Base64 would go here.
+                    const payload = {
+                        user_id: this.user.id,
+                        ref_no: this.currentOrderRef,
+                        amount: this.getCartTotal(),
+                        receipt_url: 'simulated_url',
+                        items: this.cart
+                    };
+                    try {
+                        const res = await fetch(`${WORKER_URL}/order/submit`, { method: 'POST', body: JSON.stringify(payload) });
+                        const data = await res.json();
+                        if(data.error) throw new Error(data.error);
+                        this.orders.unshift({ ref: this.currentOrderRef, amount: this.getCartTotal(), date: new Date().toLocaleDateString(), status: 'Pending Verification', receiptName: 'View Receipt' });
+                        this.cart = {}; this.showPaymentModal = false;
+                        alert('Order Submitted!');
+                    } catch (e) { alert(e.message); }
+                    this.isLoading = false;
+                },
+                
+                viewProforma(order) { alert('Downloading ' + order.ref); },
+                viewReceipt(order) { alert('Viewing receipt...'); }
             }));
         });
+        
+        // Supabase Client Helper
+        function createClient(u, k) { return window.supabase.createClient(u, k); }
     </script>
 </body>
 </html>
