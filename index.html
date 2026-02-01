@@ -683,7 +683,9 @@
                         const res = await fetch(`${WORKER_URL}/order/list`, { method: 'POST', body: JSON.stringify({ user_id: uid }) });
                         const { data } = await res.json();
                         if (data) {
+                            // UPDATE: Simpan ID untuk view invoice
                             this.orders = data.map(o => ({
+                                id: o.id, // <--- PENTING: ID DITAMBAH DI SINI
                                 ref: o.ref_no,
                                 amount: o.amount,
                                 status: o.status,
@@ -790,15 +792,9 @@
                         const data = await res.json();
                         if(data.error) throw new Error(data.error);
                         
-                        this.orders.unshift({ 
-                            ref: this.currentOrderRef, 
-                            amount: this.getCartTotal(), 
-                            date: new Date().toLocaleDateString(), 
-                            status: 'Pending Verification',
-                            statusColor: 'bg-yellow-100 text-yellow-700',
-                            receiptName: 'View Receipt' 
-                        });
-                        
+                        // Selepas submit, terus reload orders untuk dapatkan ID terkini dari DB
+                        await this.loadOrders(this.user.id);
+
                         this.cart = {}; this.showPaymentModal = false;
                         alert('Order Submitted! You cannot cancel this order.');
                     } catch (e) { alert(e.message); }
@@ -806,8 +802,9 @@
                 },
                 
                 viewProforma(order) { 
-                    alert('Downloading Proforma: ' + order.ref + '\n(Ensure popup blocker is disabled)'); 
-                    // window.open(`${WORKER_URL}/invoice/get?id=${order.ref}`, '_blank');
+                    // UPDATE: Buka link terus ke worker endpoint (pastikan popup blocker off)
+                    const url = `${WORKER_URL}/invoice/view?id=${order.id}`;
+                    window.open(url, '_blank');
                 },
                 viewReceipt(order) { alert('Viewing receipt...'); }
             }));
