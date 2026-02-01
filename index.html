@@ -44,6 +44,8 @@
         
         .btn-primary { background: linear-gradient(135deg, #D63384, #be185d); color: white; border-radius: 12px; font-weight: 600; transition: all 0.3s; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(214, 51, 132, 0.5); }
+        .btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; }
+        
         .btn-secondary { background: white; color: #583a5e; border-radius: 12px; transition: all 0.2s; border: 1px solid #e5e7eb; }
         .btn-secondary:hover { background: #fdf2f8; }
 
@@ -313,9 +315,17 @@
                  </div>
 
                  <h3 class="text-sm font-bold text-[#D63384] uppercase border-b border-[#D63384]/20 pb-2 mt-8">Rules & Regulations</h3>
+                 
                  <div class="grid gap-4">
-                     <div class="ios-glass-card p-5"><div class="flex items-center gap-3 mb-2"><i class="fa-solid fa-helmet-safety text-[#D63384]"></i><h3 class="font-bold text-[#D63384]">Construction</h3></div><p class="text-sm text-[#583a5e]/80">Maximum height 2.5m. Safety vests compulsory during setup.</p></div>
-                     <div class="ios-glass-card p-5"><div class="flex items-center gap-3 mb-2"><i class="fa-solid fa-bolt text-[#D63384]"></i><h3 class="font-bold text-[#D63384]">Electrical</h3></div><p class="text-sm text-[#583a5e]/80">No multi-plugs. Only SIRIM certified items.</p></div>
+                    <template x-for="rule in rulesList">
+                        <div class="ios-glass-card p-5">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i :class="rule.icon" class="text-[#D63384]"></i>
+                                <h3 class="font-bold text-[#D63384]" x-text="rule.title"></h3>
+                            </div>
+                            <p class="text-sm text-[#583a5e]/80 whitespace-pre-line" x-text="rule.desc"></p>
+                        </div>
+                    </template>
                  </div>
 
                  <div x-show="!rulesAccepted" class="fixed bottom-20 left-4 right-4 md:absolute md:bottom-8 md:left-8 md:right-8 ios-glass p-4 rounded-2xl border-t border-white/50 flex flex-col md:flex-row items-center justify-between gap-4 animate-bounce-in z-30 shadow-2xl bg-white/90 backdrop-blur-md">
@@ -430,7 +440,10 @@
                         <h3 class="text-sm font-bold text-[#583a5e] uppercase mt-2">Order History</h3>
                         <template x-for="order in orders" :key="order.ref">
                             <div class="ios-glass-card p-4 flex flex-col gap-3">
-                                <div class="flex justify-between items-start"><div><p class="text-sm font-bold text-[#583a5e]" x-text="order.ref"></p><p class="text-[10px] text-gray-500" x-text="order.date"></p></div><span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase" x-text="order.status"></span></div>
+                                <div class="flex justify-between items-start">
+                                    <div><p class="text-sm font-bold text-[#583a5e]" x-text="order.ref"></p><p class="text-[10px] text-gray-500" x-text="order.date"></p></div>
+                                    <span :class="order.statusColor" class="text-[10px] font-bold px-2 py-1 rounded-full uppercase" x-text="order.status"></span>
+                                </div>
                                 <div class="flex justify-between items-center border-b border-gray-100 pb-2"><span class="text-xs text-gray-500">Amount</span><span class="font-bold text-[#D63384]">RM <span x-text="order.amount"></span></span></div>
                                 <div class="grid grid-cols-2 gap-2"><button @click="viewProforma(order)" class="btn-secondary py-2 text-[10px] font-bold flex items-center justify-center gap-1"><i class="fa-solid fa-file-invoice"></i> Proforma</button><button @click="viewReceipt(order)" class="btn-secondary py-2 text-[10px] font-bold flex items-center justify-center gap-1 text-blue-600"><i class="fa-solid fa-receipt"></i> Receipt</button></div>
                             </div>
@@ -475,6 +488,27 @@
                     <p class="mt-2 text-blue-900">Bank: Maybank</p>
                     <p class="text-blue-900">Acc: 5512-3456-7890 (Absolut Event)</p>
                 </div>
+                
+                <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-triangle-exclamation text-red-500 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-red-800 text-xs uppercase">Cancellation Policy</h4>
+                            <p class="text-xs text-red-700 mt-1 leading-relaxed">
+                                Orders cannot be cancelled or refunded after <span class="font-bold underline" x-text="config.lockDate"></span>. 
+                                Any changes after this date must be approved by Admin manually.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3 py-2">
+                    <input type="checkbox" x-model="checkoutAgree" id="agreeOrder" class="w-5 h-5 accent-[#D63384] mt-0.5 rounded cursor-pointer">
+                    <label for="agreeOrder" class="text-xs text-[#583a5e] cursor-pointer select-none">
+                        I verify that the quantity ordered is correct. I understand the non-cancellation policy.
+                    </label>
+                </div>
+
                 <div>
                     <label class="block text-sm font-bold text-[#583a5e] mb-2">Upload Receipt *</label>
                     <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 relative">
@@ -483,7 +517,14 @@
                          <p class="text-xs text-gray-500" x-text="receiptFile ? receiptFile.name : 'Tap to upload'"></p>
                     </div>
                 </div>
-                <button @click="submitOrder()" class="w-full btn-primary py-3 font-bold shadow-lg">Submit Order</button>
+                
+                <button 
+                    @click="submitOrder()" 
+                    :disabled="!checkoutAgree || !receiptFile"
+                    :class="(!checkoutAgree || !receiptFile) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02] shadow-lg'"
+                    class="w-full btn-primary py-3 font-bold transition-all">
+                    Submit Order & Lock
+                </button>
                 <button @click="showPaymentModal=false" class="w-full text-sm text-gray-400 hover:text-gray-600">Cancel</button>
             </div>
         </div>
@@ -497,7 +538,7 @@
     </div>
 
     <script>
-        // GANTI DENGAN URL WORKER ANDA
+        // UPDATE DENGAN URL WORKER KAU
         const WORKER_URL = 'https://vendor-backend.ahal3ms.workers.dev'; 
 
         document.addEventListener('alpine:init', () => {
@@ -506,10 +547,24 @@
                 lang: 'en', authMode: 'login', isAuthenticated: false, isLoading: false, currentPage: 'dashboard', showEmergency: false, activeCategory: 'furniture',
                 authInput: { email: '', password: '' },
                 
+                // NEW: CONFIG & CHECKOUT STATE
+                config: {
+                    lockDate: '25 Feb 2026',
+                    adminPhone: '60123456789'
+                },
+                checkoutAgree: false,
+
                 profileCompleted: false, rulesAccepted: false, fasciaSaved: false, // Trackers
                 
                 fasciaInput: Array(25).fill(''),
                 orders: [], cart: {},
+                
+                // NEW: RULES DATA LIST
+                rulesList: [
+                    { title: "Booth Construction", icon: "fa-solid fa-helmet-safety", desc: "1. Maximum height 2.5m.\n2. Safety vests compulsory.\n3. No drilling on floor." },
+                    { title: "Electrical Safety", icon: "fa-solid fa-bolt", desc: "1. No multi-plugs allowed.\n2. Only SIRIM certified extensions.\n3. RM500 fine for violation." },
+                    { title: "Cleanliness", icon: "fa-solid fa-broom", desc: "Vendors must dispose of their own waste at the central bin." }
+                ],
                 
                 boothSpecs: [
                     { title: 'F&B Indoor Booth', img: 'https://i.imgur.com/hppoZFx.jpeg', desc: 'Standard setup for indoor food vendors.' },
@@ -536,228 +591,4 @@
                     { id: 'marketing', label: 'Marketing Kit', icon: 'fa-solid fa-bullhorn' },
                 ],
                 
-                user: { id: null, companyName: '', brandName: '', picName: '', phonePrefix: '+60', phone: '', email: '', address: '', boothNo: '', logo: null, socials: { instagram: '', tiktok: '', facebook: '' } },
-                
-                text: {
-                    en: { login_tab: 'Log In', signup_tab: 'First Time Log In', login_desc: 'Welcome back.', login_btn: 'Log In', signup_btn: 'Register', dashboard: 'Dashboard', rules: 'Rules & Docs', order: 'Order', logistics: 'Logistics', marketing: 'Marketing Kit', profile: 'Profile', welcome: 'Welcome,', status: 'Status', deadline: 'Deadline', balance: 'Balance', days_left: 'Days Left', furniture: 'Furniture', electrical: 'Electrical', pass: 'Passes', parking: 'Parking', cart_total: 'Total', submit_order: 'Checkout', signup_desc: 'Register booth.' },
-                    ms: { login_tab: 'Masuk', signup_tab: 'Daftar', login_desc: 'Selamat kembali.', login_btn: 'Masuk', signup_btn: 'Daftar', dashboard: 'Utama', rules: 'Info & Dokumen', order: 'Tempahan', logistics: 'Logistik', marketing: 'Kit Pemasaran', profile: 'Profil', welcome: 'Hai,', status: 'Status', deadline: 'Tarikh Akhir', balance: 'Baki', days_left: 'Hari', furniture: 'Perabot', electrical: 'Elektrik', pass: 'Pas', parking: 'Parkir', cart_total: 'Jumlah', submit_order: 'Bayar', signup_desc: 'Daftar booth.' }
-                },
-                
-                logisticsTimeline: [
-                    { time: '12 Mac - 2PM', title: 'Booth Setup', desc: 'Vendor entry starts. Loading bay opens.' },
-                    { time: '13 Mac - 10AM', title: 'Event Starts', desc: 'All booths must be ready by 9:30 AM.' },
-                    { time: '15 Mac - 12AM', title: 'Teardown', desc: 'Clearance. Refundable deposit processed.' },
-                ],
-                products: [
-                    { id: 1, category: 'furniture', name_ms: 'Meja Banquet', name_en: 'Banquet Table', price: 30, img: 'https://placehold.co/150/f472b6/fff?text=Table' },
-                    { id: 2, category: 'furniture', name_ms: 'Kerusi Plastik', name_en: 'Plastic Chair', price: 5, img: 'https://placehold.co/150/f472b6/fff?text=Chair' },
-                    { id: 3, category: 'electrical', name_ms: 'Plug Point 13A', name_en: 'Plug Point 13A', price: 80, img: 'https://placehold.co/150/f472b6/fff?text=Plug' },
-                    { id: 4, category: 'pass', name_ms: 'Pas Tambahan', name_en: 'Extra Pass', price: 15, img: 'https://placehold.co/150/f472b6/fff?text=Pass' },
-                    { id: 5, category: 'parking', name_ms: 'Tiket Parkir', name_en: 'Parking Ticket', price: 10, img: 'https://placehold.co/150/f472b6/fff?text=Parking' }
-                ],
-                
-                // --- INIT & AUTH ---
-                async initApp() {
-                    const session = JSON.parse(localStorage.getItem('user_session'));
-                    if (session && session.user) {
-                        this.isAuthenticated = true;
-                        this.user.email = session.user.email;
-                        this.user.id = session.user.id;
-                        await this.loadProfile(this.user.id);
-                        await this.loadOrders(this.user.id);
-                    }
-                    const hash = window.location.hash.replace('#', '');
-                    if(hash && this.menuItems.some(i => i.id === hash)) this.goToTab(hash);
-                },
-
-                async handleSignup() {
-                    this.isLoading = true;
-                    try {
-                        // 1. Sign Up Auth
-                        const res = await fetch(`${WORKER_URL}/auth/signup`, { method: 'POST', body: JSON.stringify(this.authInput) });
-                        const data = await res.json();
-                        if (data.error) throw new Error(data.error);
-                        
-                        // 2. Auto-Save Profile Data Immediately (Assuming trigger created row, we update it)
-                        if (data.user) {
-                            // If your worker supports /profile/save right after signup without auth header yet (might be tricky depending on RLS),
-                            // usually for email confirmation flow, you can't write to DB until confirmed/logged in.
-                            // BUT, if your Supabase allows, or if we just alert user.
-                            alert('Success! Please check your email to confirm. Your details will be saved upon login.');
-                            // Optional: Store temp data in localstorage to restore on first login
-                        }
-                    } catch (e) { alert(e.message); }
-                    this.isLoading = false;
-                },
-
-                async handleLogin() {
-                    this.isLoading = true;
-                    try {
-                        const res = await fetch(`${WORKER_URL}/auth/login`, { method: 'POST', body: JSON.stringify(this.authInput) });
-                        const data = await res.json();
-                        if (data.error) throw new Error(data.error);
-                        localStorage.setItem('user_session', JSON.stringify(data.session));
-                        this.isAuthenticated = true;
-                        this.user.id = data.session.user.id;
-                        this.user.email = data.session.user.email;
-                        await this.loadProfile(this.user.id);
-                        await this.loadOrders(this.user.id);
-                        
-                        // Check if we need to auto-save profile from signup form (if implemented state transfer)
-                        // For now, we go to next step
-                        this.goToNextStep();
-                    } catch (e) { alert(e.message); }
-                    this.isLoading = false;
-                },
-
-                handleLogout() {
-                    localStorage.removeItem('user_session');
-                    this.isAuthenticated = false;
-                    window.location.reload();
-                },
-
-                // --- DATA ---
-                async loadProfile(uid) {
-                    try {
-                        const res = await fetch(`${WORKER_URL}/profile/get`, { method: 'POST', body: JSON.stringify({ user_id: uid }) });
-                        const { data } = await res.json();
-                        if (data) {
-                            this.user = { ...this.user, ...data };
-                            if (data.fascia_name) {
-                                this.fasciaSaved = true;
-                                const chars = data.fascia_name.split('');
-                                for(let i=0; i<25; i++) this.fasciaInput[i] = chars[i] || '';
-                            }
-                            this.profileCompleted = data.profile_completed || false;
-                            this.rulesAccepted = data.rules_accepted || false;
-                        }
-                    } catch (e) { console.error(e); }
-                },
-
-                async loadOrders(uid) {
-                    try {
-                        const res = await fetch(`${WORKER_URL}/order/list`, { method: 'POST', body: JSON.stringify({ user_id: uid }) });
-                        const { data } = await res.json();
-                        if (data) {
-                            this.orders = data.map(o => ({
-                                ref: o.ref_no,
-                                amount: o.amount,
-                                status: o.status,
-                                date: new Date(o.created_at).toLocaleDateString(),
-                                receiptName: 'View Receipt'
-                            }));
-                        }
-                    } catch (e) { console.error(e); }
-                },
-
-                // --- ACTIONS ---
-                t(k) { return this.text[this.lang][k] || k; }, t_prod(p) { return this.lang === 'ms' ? p.name_ms : p.name_en; }, setLang(v) { this.lang = v; },
-                
-                isTabLocked(id) { 
-                    if(id==='dashboard'||id==='profile')return false; 
-                    if(id==='rules')return !this.profileCompleted; 
-                    if(id==='specs')return !this.rulesAccepted;
-                    if(id==='logistics'||id==='order'||id==='marketing') return !this.rulesAccepted; 
-                    return false;
-                },
-                
-                goToTab(id) { 
-                    if(this.isTabLocked(id)){ alert('Complete previous steps.'); return; } 
-                    this.currentPage = id; window.location.hash = id;
-                },
-                
-                goToNextStep() { 
-                    if(!this.profileCompleted)this.goToTab('profile'); 
-                    else if(!this.rulesAccepted)this.goToTab('rules'); 
-                    else this.goToTab('specs'); 
-                },
-                
-                async saveProfile() { 
-                    if(!this.user.brandName){alert('Fill Brand Name');return;} 
-                    const fascia = this.getFasciaString();
-                    if(!fascia){alert('Fill Fascia Name');return;}
-                    
-                    if(confirm('Confirm Profile & Fascia Name: ' + fascia)) {
-                        this.isLoading = true;
-                        const payload = {
-                            id: this.user.id,
-                            brand_name: this.user.brandName,
-                            company_name: this.user.companyName,
-                            pic_name: this.user.picName,
-                            phone: this.user.phone,
-                            address: this.user.address,
-                            booth_no: this.user.boothNo,
-                            fascia_name: fascia,
-                            socials: this.user.socials,
-                            logo_url: this.user.logo,
-                            profile_completed: true,
-                            fascia_saved: true
-                        };
-                        try {
-                            const res = await fetch(`${WORKER_URL}/profile/save`, { method: 'POST', body: JSON.stringify(payload) });
-                            const data = await res.json();
-                            if(data.error) throw new Error(data.error);
-                            this.profileCompleted=true; this.fasciaSaved=true;
-                            alert('Saved!'); this.goToTab('rules');
-                        } catch (e) { alert(e.message); }
-                        this.isLoading = false;
-                    }
-                },
-
-                handleLogoUpload(e) { 
-                    // In real implementation, convert file to Base64 and send to worker to upload to Supabase Storage
-                    // For now, we simulate a successful local preview
-                    const f=e.target.files[0]; if(f) this.user.logo=URL.createObjectURL(f); 
-                },
-
-                handleFasciaInput(e, index) { this.fasciaInput[index] = e.target.value.toUpperCase(); if(e.target.value.length===1 && index<24) setTimeout(() => { document.getElementById('char-'+(index+1)).focus(); }, 10); },
-                handleFasciaBackspace(e, index) { if(e.target.value==='' && index>0) document.getElementById('char-'+(index-1)).focus(); },
-                getFasciaString() { return this.fasciaInput.join('').trim(); },
-                
-                async agreeRules() { 
-                    this.rulesAccepted=true; 
-                    // In real app, update DB here too
-                    this.goToTab('specs'); 
-                },
-                
-                acceptSpecs() { this.goToTab('logistics'); },
-
-                addToCart(id, qty) { if(!this.cart[id])this.cart[id]=0; this.cart[id]+=qty; if(this.cart[id]<0)this.cart[id]=0; },
-                getCartTotal() { let t=0; for(let [i,q] of Object.entries(this.cart)){ const p=this.products.find(x=>x.id==i); if(p)t+=p.price*q; } return t.toFixed(2); },
-                
-                initiatePayment() {
-                    this.currentOrderRef = 'INV-' + Math.floor(Math.random()*900000);
-                    this.receiptFile = null;
-                    this.showPaymentModal = true;
-                },
-                handleReceiptUpload(e) { this.receiptFile = e.target.files[0]; },
-                
-                async submitOrder() {
-                    if(!this.receiptFile) { alert('Receipt is required!'); return; }
-                    this.isLoading = true;
-                    // Upload logic via Worker/Base64 would go here.
-                    const payload = {
-                        user_id: this.user.id,
-                        ref_no: this.currentOrderRef,
-                        amount: this.getCartTotal(),
-                        receipt_url: 'simulated_url',
-                        items: this.cart
-                    };
-                    try {
-                        const res = await fetch(`${WORKER_URL}/order/submit`, { method: 'POST', body: JSON.stringify(payload) });
-                        const data = await res.json();
-                        if(data.error) throw new Error(data.error);
-                        this.orders.unshift({ ref: this.currentOrderRef, amount: this.getCartTotal(), date: new Date().toLocaleDateString(), status: 'Pending Verification', receiptName: 'View Receipt' });
-                        this.cart = {}; this.showPaymentModal = false;
-                        alert('Order Submitted!');
-                    } catch (e) { alert(e.message); }
-                    this.isLoading = false;
-                },
-                
-                viewProforma(order) { alert('Downloading ' + order.ref); },
-                viewReceipt(order) { alert('Viewing receipt...'); }
-            }));
-        });
-    </script>
-</body>
-</html>
+                user: { id: null, companyName: '', brandName: '', picName: '', phonePrefix: '+6
